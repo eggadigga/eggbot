@@ -22,6 +22,9 @@ config = ConfigParser()
 config.read(config_file, encoding='utf-8')
 load_dotenv(env_file)
 
+## Stock symbols
+symbol_list = [sym.split('\n')[0] for sym in open(stock_symbols_file).readlines()]
+
 ## Alpaca Instance Setup
 api_key = os.environ['apcapaperkey']
 api_secret = os.environ['apcapapersecret']
@@ -33,7 +36,7 @@ account_data = exchange.get_account_info()
 
 ## Get Alpaca watchlists
 watchlist = exchange.get_watchlist()
-print(pformat(watchlist))
+# print(pformat(watchlist))
 
 ## Get Market Clock
 market_clock = exchange.get_market_clock()
@@ -42,11 +45,11 @@ market_clock = exchange.get_market_clock()
 ## Get asset data from stock symbols in text file
 def get_stock_ticker_info():
     asset_data_list = []
-    with open(stock_symbols_file, 'r') as f:
-        sym_list = f.readlines()
-        for item in sym_list:
-            sym = item.split('\n')[0]
-            asset = exchange.get_single_asset(sym)
-            asset_data_list.append(asset)
-            
+    for sym in symbol_list:
+        asset = exchange.get_single_asset(sym)
+        asset_data_list.append(asset)
     return asset_data_list
+
+
+
+print(exchange.get_order_list())
