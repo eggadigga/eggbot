@@ -9,6 +9,7 @@ author: eggadigga
 from dotenv import load_dotenv
 from configparser import ConfigParser
 from modules.alpaca_paper import AlpacaPaper
+from modules.av_market_data import AlphaVantage
 from pprint import pformat
 import os, sys
 
@@ -30,9 +31,13 @@ api_key = os.environ['apcapaperkey']
 api_secret = os.environ['apcapapersecret']
 exchange = AlpacaPaper(api_key, api_secret)
 
+## AlphaVantage Instance Setup for Market Data
+av_api_key = os.environ['alphavantkey']
+avmd = AlphaVantage(av_api_key)
+
 ## Gather Alpaca Account info
 account_data = exchange.get_account_info()
-print(pformat(account_data))
+# print(pformat(account_data))
 
 ## Get Alpaca watchlists
 # watchlist = exchange.get_watchlist()
@@ -53,6 +58,7 @@ def get_stock_ticker_info():
 def buy_stock_trail_stop_order(amount, percentage):
     for sym in symbol_list:
         resp = exchange.buy_order_trail_stop(sym, amount, percentage)
+        print(resp)
 
 def buy_stock_limit_order(amount, limit):
     for sym in symbol_list:
@@ -63,12 +69,19 @@ def buy_stock_market_order(shares):
         resp = exchange.buy_order_market(sym, shares)
 
 if __name__ == '__main__':
+    
     # buy_stock_trail_stop_order('10', '0.1')
     # buy_stock_limit_order('10', '6')
-    buy_stock_market_order('10')
+    # buy_stock_market_order('10')
+
+    md_tsd = avmd.get_time_series_daily('tsla')
+    md_quote = avmd.get_stock_quote('tsla')
+    print(pformat(md_quote))
+
     orders = exchange.get_order_list()
     for order in orders:
         print(order['created_at'])
         print(order['symbol'])
         print(order['order_type'])
         print()
+
