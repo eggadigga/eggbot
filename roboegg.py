@@ -27,25 +27,13 @@ load_dotenv(env_file)
 symbol_list = [sym.split('\n')[0] for sym in open(stock_symbols_file).readlines()]
 
 ## Alpaca Instance Setup
-api_key = os.environ['apcapaperkey']
-api_secret = os.environ['apcapapersecret']
-exchange = AlpacaPaper(api_key, api_secret)
-
-## AlphaVantage Instance Setup for Market Data
-av_api_key = os.environ['alphavantkey']
-avmd = AlphaVantage(av_api_key)
+paper_api_key = os.environ['apcapaperkey']
+paper_api_secret = os.environ['apcapapersecret']
+exchange = AlpacaPaper(paper_api_key, paper_api_secret)
 
 ## Gather Alpaca Account info
 account_data = exchange.get_account_info()
 # print(pformat(account_data))
-
-## Get Alpaca watchlists
-# watchlist = exchange.get_watchlist()
-# print(pformat(watchlist))
-
-## Get Market Clock
-# market_clock = exchange.get_market_clock()
-# # print(pformat(market_clock))
 
 ## Get asset data from stock symbols in text file
 def get_stock_ticker_info():
@@ -70,18 +58,26 @@ def buy_stock_market_order(shares):
 
 if __name__ == '__main__':
     
-    # buy_stock_trail_stop_order('10', '0.1')
+    # buy_stock_trail_stop_order('10', '3')
     # buy_stock_limit_order('10', '6')
     # buy_stock_market_order('10')
 
-    md_tsd = avmd.get_time_series_daily('tsla')
-    md_quote = avmd.get_stock_quote('tsla')
-    print(pformat(md_quote))
+#### Get Market Data ####
+    # md_tsd = avmd.get_time_series_daily('tsla')
+    # md_quote = avmd.get_stock_quote('tsla')
+    # print(pformat(md_quote)
+
+    abat = pformat(exchange.get_latest_stock_quote('abat', os.environ['apcarealkey'], os.environ['apcarealsecret']))
+    print(abat)
+
+# ### Get Market Clock
+#     market_clock = exchange.get_market_clock()
+#     print(pformat(market_clock))
 
     orders = exchange.get_order_list()
-    for order in orders:
-        print(order['created_at'])
-        print(order['symbol'])
-        print(order['order_type'])
-        print()
+    # for order in orders:
+    #     print(order['created_at'])
+    #     print(order['symbol'])
+    #     print(order['order_type'])
+    #     print()
 

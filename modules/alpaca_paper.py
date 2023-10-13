@@ -63,10 +63,10 @@ class AlpacaPaper():
         parameters = {
             'symbol': symbol.upper(),
             'side': 'buy',
-            'notional': shares,
+            'qty': shares,
             'type': 'trailing_stop',
             'trail_percent': trail_percentage,
-            'extended_hours': True,
+            'extended_hours': False,
             'time_in_force': 'day'
             }
         return self.session.post(uri, headers=self.common_headers, json=parameters, verify=True).json()
@@ -85,7 +85,7 @@ class AlpacaPaper():
             'qty': shares,
             'type': 'limit',
             'limit_price': limit,
-            'extended_hours': True,
+            'extended_hours': False,
             'time_in_force': 'day'
             }
         return self.session.post(uri, headers=self.common_headers, json=parameters, verify=True).json()
@@ -120,3 +120,17 @@ class AlpacaPaper():
         '''
         uri = self.base_uri + f'/v2/orders'
         return self.session.delete(uri, headers=self.common_headers, verify=True).json()
+
+    def get_latest_stock_quote(self, symbol, real_apikey, real_apisecret):
+        '''
+        Return latest stock quote. Shared between paper and live trading environments, hence passing real keys/secret.
+        Data returned is 1.
+        :param symbol => Stock symbol.
+        '''
+        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/quotes/latest'
+        headers = {
+            'content-type': 'application/json',
+            'APCA-API-KEY-ID': real_apikey,
+            'APCA-API-SECRET-KEY': real_apisecret
+        }
+        return self.session.get(uri, headers=headers, verify=True).json()
