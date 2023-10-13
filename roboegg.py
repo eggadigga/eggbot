@@ -32,15 +32,15 @@ exchange = AlpacaPaper(api_key, api_secret)
 
 ## Gather Alpaca Account info
 account_data = exchange.get_account_info()
-# print(pformat(account_data))
+print(pformat(account_data))
 
 ## Get Alpaca watchlists
-watchlist = exchange.get_watchlist()
+# watchlist = exchange.get_watchlist()
 # print(pformat(watchlist))
 
 ## Get Market Clock
-market_clock = exchange.get_market_clock()
-# print(pformat(market_clock))
+# market_clock = exchange.get_market_clock()
+# # print(pformat(market_clock))
 
 ## Get asset data from stock symbols in text file
 def get_stock_ticker_info():
@@ -50,6 +50,25 @@ def get_stock_ticker_info():
         asset_data_list.append(asset)
     return asset_data_list
 
+def buy_stock_trail_stop_order(amount, percentage):
+    for sym in symbol_list:
+        resp = exchange.buy_order_trail_stop(sym, amount, percentage)
 
+def buy_stock_limit_order(amount, limit):
+    for sym in symbol_list:
+        resp = exchange.buy_order_limit(sym, amount, limit)
 
-print(exchange.get_order_list())
+def buy_stock_market_order(shares):
+    for sym in symbol_list:
+        resp = exchange.buy_order_market(sym, shares)
+
+if __name__ == '__main__':
+    # buy_stock_trail_stop_order('10', '0.1')
+    # buy_stock_limit_order('10', '6')
+    buy_stock_market_order('10')
+    orders = exchange.get_order_list()
+    for order in orders:
+        print(order['created_at'])
+        print(order['symbol'])
+        print(order['order_type'])
+        print()
