@@ -61,8 +61,8 @@ def buy_stock_market_order(symbols):
             bid = exchange.get_latest_stock_quote(sym, os.environ['apcarealkey'], os.environ['apcarealsecret'])['quote']['bp']
             shares = str(int(cash_alllotted_per_stock / bid))
             resp = exchange.buy_order_market(sym, shares)
-        except ZeroDivisionError:
-            continue
+        except ZeroDivisionError as e:
+            print(f'Error: {e}')
 
 def analyze_positions():
     ## analyze open positions and close based on p/l.
@@ -79,6 +79,11 @@ def analyze_positions():
     
 if __name__ == '__main__':
 
+#### Loop until market opens
+    while exchange.get_market_clock()['is_open'] == False:
+        sleep(60)
+        continue
+          
 #### Get Top 20 Most Traded Stocks  ####
     avmd = AlphaVantage(os.environ['alphavantkey'])
     symbols = []
