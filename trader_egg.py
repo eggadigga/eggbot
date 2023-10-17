@@ -78,11 +78,20 @@ def analyze_positions():
             continue
     
 if __name__ == '__main__':
+    print()
+    print('$'*75)
+    print('\nEgga\'s trading bot is now running.')
+    print('Author: eggadigga\n')
+    print('$'*75)
 
 #### Loop until market opens
-    while exchange.get_market_clock()['is_open'] == False:
-        sleep(60)
-        continue
+    market_open = exchange.get_market_clock()['is_open'] == True
+    if market_open == False:
+        print('\nMarket is currently closed...\n')
+        while exchange.get_market_clock()['is_open'] == False:
+            sleep(60)
+            continue
+    print('\nMarket is now open... Let the games begin...')
           
 #### Get Top 20 Most Traded Stocks  ####
     avmd = AlphaVantage(os.environ['alphavantkey'])
@@ -108,7 +117,7 @@ if __name__ == '__main__':
         sleep(60)
     exchange.close_all_positions()
 
-### Get open orders
+#### Get open orders
     #orders = exchange.get_order_list()
     # for order in orders:
     #     print(order['created_at'])
@@ -116,5 +125,5 @@ if __name__ == '__main__':
     #     print(order['order_type'])
     #     print()
 
-### Cancel orders
-    #exchange.cancel_order_list()
+#### Cancel orders
+    exchange.cancel_order_list()
