@@ -77,7 +77,6 @@ def account_balance():
     print(f'\n\n|| Current Account Balance as of {now} ||')
     print(f'equity: {equity}')
     print(f'cash: {cash}')
-    
 
 if __name__ == '__main__':
     print()
@@ -99,9 +98,8 @@ if __name__ == '__main__':
 
 ### Loop through positions.
     open_crypto_positions = check_open_positions()
-    while open_crypto_positions > 0:
+    while check_open_positions() > 0:
         analyze_crypto_positions()
-        open_crypto_positions = check_open_positions()
         account_balance()
         sleep(60)
         
