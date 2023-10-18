@@ -70,9 +70,9 @@ def analyze_positions():
     for position in positions:
         symbol = position['symbol']
         pnl_pct = position['unrealized_plpc']
-        if pnl_pct.startswith(('0.0000', '-0.0000')) == False and float(pnl_pct) < -0.02:
+        if pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.02:
            exchange.close_single_position(symbol)
-        elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and float(pnl_pct) > 0.07:
+        elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.07:
             exchange.close_single_position(symbol)
         else:
             continue
@@ -80,7 +80,7 @@ def analyze_positions():
 if __name__ == '__main__':
     print()
     print('$'*75)
-    print('\nEgga\'s trading bot is now running.')
+    print('\nEgga\'s stock trading bot is now running.')
     print('Author: eggadigga\n')
     print('$'*75)
 
@@ -115,7 +115,12 @@ if __name__ == '__main__':
         analyze_positions()
         current_time = datetime.now().time()
         sleep(60)
-    exchange.close_all_positions()
+    for position in exchange.get_open_positions():
+        if position['asset_class'] == 'us_equity':
+            exchange.close_single_position(position['symbol'])
+            sleep(1)
+        else:
+            continue
 
 #### Get open orders
     #orders = exchange.get_order_list()

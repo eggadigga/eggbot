@@ -44,6 +44,17 @@ class AlpacaPaper():
         uri = self.base_uri + '/v2/assets'
         return self.session.get(uri, headers=self.common_headers, verify=True).json()
     
+    def get_crypto_assets(self):
+        '''
+        Returns all Alpaca tradeable crypto assets.
+        '''
+        uri = self.base_uri + '/v2/assets'
+        params = {
+            'status': 'active',
+            'asset_class': 'crypto'
+        }
+        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
+    
     def get_single_asset(self, symbol):
         '''
         Returns Single Asset.
@@ -107,6 +118,22 @@ class AlpacaPaper():
             }
         return self.session.post(uri, headers=self.common_headers, json=parameters, verify=True).json()
     
+    def buy_crypto_order_market(self, symbol, amount:str):
+        '''
+        Places Alpaca buy market order.
+        :params symbol => Crypto ticker symbol.
+        :params shares => Quantity of shares.
+        '''
+        uri = self.base_uri + f'/v2/orders'
+        parameters = {
+            'symbol': symbol.upper(),
+            'side': 'buy',
+            'notional': amount,
+            'type': 'market',
+            'time_in_force': 'gtc'
+            }
+        return self.session.post(uri, headers=self.common_headers, json=parameters, verify=True).json()
+    
     def get_order_list(self):
         '''
         Return list of orders.
@@ -160,3 +187,17 @@ class AlpacaPaper():
             'APCA-API-SECRET-KEY': real_apisecret
         }
         return self.session.get(uri, headers=headers, verify=True).json()
+
+    def get_latest_crypto_quote(self, symbol, real_apikey, real_apisecret):
+        '''
+        Return latest crypto quote. Shared between paper and live trading environments, hence passing real keys/secret.
+        :param symbol => Crypto symbol.
+        '''
+        uri = f'https://data.alpaca.markets/v1beta3/crypto/us/latest/quotes'
+        headers = {
+            'content-type': 'application/json',
+            'APCA-API-KEY-ID': real_apikey,
+            'APCA-API-SECRET-KEY': real_apisecret
+        }
+        params = {'symbols': symbol}
+        return self.session.get(uri, headers=headers, params=params, verify=True).json()
