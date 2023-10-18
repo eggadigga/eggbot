@@ -40,7 +40,7 @@ def buy_stock_trail_stop_order(amount, percentage):
 def buy_crypto_market_order(symbols):
     ## Gather available cash
     account_data = exchange.get_account_info()
-    cash = int(account_data['cash'].split('.')[0]) / 2
+    cash = int(account_data['cash'].split('.')[0])
     ## Divide total cash by number of crypto to buy to get allotted cash for each.
     cash_alllotted_per_crypto = int(cash / len(symbols)) 
     for sym in symbols:
@@ -70,6 +70,15 @@ def check_open_positions():
             open_crypto_positions.append(cp['symbol'])
     return len(open_crypto_positions)
 
+def account_balance():
+    equity = exchange.get_account_info()['equity']
+    cash = exchange.get_account_info()['cash']
+    now = datetime.now()
+    print(f'\n\n|| Current Account Balance as of {now} ||')
+    print(f'equity: {equity}')
+    print(f'cash: {cash}')
+    
+
 if __name__ == '__main__':
     print()
     print('$'*75)
@@ -77,6 +86,8 @@ if __name__ == '__main__':
     print('Author: eggadigga\n')
     print('$'*75)
 
+### Show account balance
+    account_balance()
 ### Gather available crypto tradeable assets in Alpaca
     crypto_symbols = []
     for asset in exchange.get_crypto_assets():
@@ -91,4 +102,9 @@ if __name__ == '__main__':
     while open_crypto_positions > 0:
         analyze_crypto_positions()
         open_crypto_positions = check_open_positions()
+        account_balance()
         sleep(60)
+        
+    account_balance()
+    print('\nCrypto positions closed...')
+
