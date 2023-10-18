@@ -104,7 +104,7 @@ if __name__ == '__main__':
     # buy_stock_trail_stop_order('10', '3')
     # buy_stock_limit_order('10', '6')
     buy_stock_market_order(symbols)
-    sleep(10)
+    sleep(86400) ## wait 24 hours to avoid pattern day trade
 
 #### Gather current time, set sell time to 3:53 PM ET.
 #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
