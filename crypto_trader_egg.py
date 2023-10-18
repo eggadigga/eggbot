@@ -42,13 +42,26 @@ def buy_crypto_market_order(symbols):
     account_data = exchange.get_account_info()
     cash = int(account_data['cash'].split('.')[0])
     ## Divide total cash by number of crypto to buy to get allotted cash for each.
-    cash_alllotted_per_crypto = int(cash / len(symbols)) 
+    cash_allotted_per_crypto = int(cash / len(symbols))
     for sym in symbols:
-        ## Get current bid for crypto symbol
+        ## submit market buy order. Pop out Symbols from list of failed order
         try:
-            resp = exchange.buy_crypto_order_market(sym, cash_alllotted_per_crypto)
+            resp = exchange.buy_crypto_order_market(sym, cash_allotted_per_crypto)
+            if 'code' in resp:
+                if resp['code'] == 40310000:
+                    symbols.remove(sym) ## pop out crypto symbol with failed transaction
         except ZeroDivisionError as e:
             print(f'Error: {e}')
+
+    ## submit another market buy order for crypto we can buy.
+    cash = int(account_data['cash'].split('.')[0])
+    cash_allotted_per_crypto = int(cash / len(symbols))
+    for sym in symbols:
+        try:
+            resp = exchange.buy_crypto_order_market(sym, cash_allotted_per_crypto)
+        except ZeroDivisionError as e:
+            print(f'Error: {e}')
+
 
 def analyze_crypto_positions():
     ## analyze open positions and close based on p/l.
