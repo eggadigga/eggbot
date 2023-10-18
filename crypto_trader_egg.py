@@ -40,7 +40,7 @@ def buy_stock_trail_stop_order(amount, percentage):
 def buy_crypto_market_order(symbols):
     ## Gather available cash
     account_data = exchange.get_account_info()
-    cash = int(account_data['cash'].split('.')[0])
+    cash = int(account_data['cash'].split('.')[0]) / 2
     ## Divide total cash by number of crypto to buy to get allotted cash for each.
     cash_alllotted_per_crypto = int(cash / len(symbols)) 
     for sym in symbols:

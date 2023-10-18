@@ -52,7 +52,7 @@ def buy_stock_limit_order(amount, limit):
 def buy_stock_market_order(symbols):
     ## Gather available cash
     account_data = exchange.get_account_info()
-    cash = int(account_data['cash'].split('.')[0])
+    cash = int(account_data['cash'].split('.')[0]) / 2
     ## Divide total cash by number of stocks to buy to get allotted cash for each stock.
     cash_alllotted_per_stock = int(cash / len(symbols)) 
     for sym in symbols:
