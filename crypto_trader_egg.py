@@ -33,10 +33,6 @@ paper_api_key = os.environ['apcapaperkey']
 paper_api_secret = os.environ['apcapapersecret']
 exchange = AlpacaPaper(paper_api_key, paper_api_secret)
 
-def buy_stock_trail_stop_order(amount, percentage):
-    for sym in symbol_list:
-        resp = exchange.buy_order_trail_stop(sym, amount, percentage)
-
 def buy_crypto_market_order(symbols):
     ## Gather available cash
     account_data = exchange.get_account_info()
@@ -61,7 +57,6 @@ def buy_crypto_market_order(symbols):
             resp = exchange.buy_crypto_order_market(sym, cash_allotted_per_crypto)
         except ZeroDivisionError as e:
             print(f'Error: {e}')
-
 
 def analyze_crypto_positions():
     ## analyze open positions and close based on p/l.
