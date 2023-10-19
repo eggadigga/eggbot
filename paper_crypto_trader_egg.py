@@ -1,7 +1,7 @@
 #! python3
 
 '''
-name: crypto_trader_egg.py
+name: paper_crypto_trader_egg.py
 description: trade bot placing random crypto trades on egga's dime
 author: eggadigga
 '''

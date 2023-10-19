@@ -1,14 +1,14 @@
 #! python3
 
 '''
-name: trader_egg.py
+name: real_trader_egg.py
 description: trade bot placing random trades on egga's dime
 author: eggadigga
 '''
 
 from dotenv import load_dotenv
 from configparser import ConfigParser
-from modules.alpaca_paper import AlpacaPaper
+from modules.alpaca_real import AlpacaReal
 from modules.av_market_data import AlphaVantage
 from pprint import pformat
 import os, sys
@@ -29,9 +29,9 @@ load_dotenv(env_file)
 symbol_list = [sym.split('\n')[0] for sym in open(stock_symbols_file).readlines()]
 
 ## Alpaca Instance Setup
-paper_api_key = os.environ['apcapaperkey']
-paper_api_secret = os.environ['apcapapersecret']
-exchange = AlpacaPaper(paper_api_key, paper_api_secret)
+real_api_key = os.environ['apcarealkey']
+real_api_secret = os.environ['apcarealsecret']
+exchange = AlpacaReal(real_api_key, real_api_secret)
 
 ## Get asset data from stock symbols in text file
 def get_asset_info():
@@ -111,7 +111,13 @@ if __name__ == '__main__':
         # buy_stock_trail_stop_order('10', '3')
         # buy_stock_limit_order('10', '6')
         buy_stock_market_order(symbols)
-        sleep(86410) ## wait > 24 hours to avoid pattern day trade
+        
+    #### Keep Positions open for a minimum of 24 hours
+        next_day = datetime.now() + timedelta(days=1)
+        while datetime.now() <= next_day:
+            account_balance()
+            print('Waiting a day before selling positions.')
+            sleep(60)
 
     #### Gather current time, set sell time to 3:55 PM ET.
     #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
