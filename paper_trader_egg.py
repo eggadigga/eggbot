@@ -87,16 +87,16 @@ def account_balance():
 if __name__ == '__main__':
     print()
     print('$'*75)
-    print('\nEgga\'s stock trading bot is now running.')
+    print('\nEgga\'s paper stock trading bot is now running.')
     print('Author: eggadigga\n')
     print('$'*75)
 
     while True:
     #### Loop until market opens
         if exchange.get_market_clock()['is_open'] == False:
-            print('\nMarket is currently closed...\n')
             while exchange.get_market_clock()['is_open'] == False:
                 account_balance()
+                print('\nMarket is currently closed...\n')
                 sleep(60)
         print('\nMarket is now open... Let the games begin...')
 

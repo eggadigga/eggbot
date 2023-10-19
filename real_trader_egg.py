@@ -94,9 +94,9 @@ if __name__ == '__main__':
     while True:
     #### Loop until market opens
         if exchange.get_market_clock()['is_open'] == False:
-            print('\nMarket is currently closed...\n')
             while exchange.get_market_clock()['is_open'] == False:
                 account_balance()
+                print('\nMarket is currently closed...\n')
                 sleep(60)
         print('\nMarket is now open... Let the games begin...')
 
