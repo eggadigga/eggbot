@@ -109,18 +109,21 @@ if __name__ == '__main__':
                 sleep(60)
         print('\nMarket is now open... Let the games begin...')
 
-    #### Buy stocks ####
-        # buy_stock_trail_stop_order('10', '3')
-        # buy_stock_limit_order('10', '6')
-        symbols = get_most_active_stocks()
-        buy_stock_market_order(symbols)
-        
-    #### Keep Positions open for a minimum of 24 hours
-        next_day = datetime.now() + timedelta(days=1)
-        while datetime.now() <= next_day:
-            account_balance()
-            print('Waiting a day before selling positions.')
-            sleep(60)
+        #### Buy stocks first thing in the morning per config file ####
+        config.read(config_file, encoding='utf-8')
+        buy_am = config['trade_env']['buy_am']
+        if  buy_am == 'yes':
+            symbols = get_most_active_stocks()
+            buy_stock_market_order(symbols)
+            
+        #### Prevent pattern day trade by waiting until market close and reopen.
+            while exchange.get_market_clock()['is_open'] == True:
+                account_balance()
+                sleep(60)
+            while exchange.get_market_clock()['is_open'] == False:
+                account_balance()
+                print('\nMarket is currently closed...\n')
+                sleep(60)
 
     #### Gather current time, set sell time to 1:30 PM ET.
     #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
@@ -149,4 +152,5 @@ if __name__ == '__main__':
 
     #### Wait for market to close before returning to beginning
         while exchange.get_market_clock()['is_open'] == True:
+            account_balance()
             sleep(60)
