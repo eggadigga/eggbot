@@ -109,17 +109,18 @@ if __name__ == '__main__':
                 sleep(60)
         print('\nMarket is now open... Let the games begin...')
 
-        #### Buy stocks first thing in the morning per config file ####
+    #### Buy stocks first thing in the morning per config file ####
         config.read(config_file, encoding='utf-8')
         buy_am = config['trade_env']['buy_am']
         if  buy_am == 'yes':
             symbols = get_most_active_stocks()
             buy_stock_market_order(symbols)
             
-        #### Prevent pattern day trade by waiting until market close and reopen.
+    #### Prevent pattern day trade by waiting until market close and reopen.
             while exchange.get_market_clock()['is_open'] == True:
                 account_balance()
                 sleep(60)
+            sleep(2)
             while exchange.get_market_clock()['is_open'] == False:
                 account_balance()
                 print('\nMarket is currently closed...\n')
