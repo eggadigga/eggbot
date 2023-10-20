@@ -70,7 +70,7 @@ def analyze_positions():
     for position in positions:
         symbol = position['symbol']
         pnl_pct = position['unrealized_plpc']
-        if pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.02:
+        if pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.03:
            exchange.close_single_position(symbol)
         elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.07:
             exchange.close_single_position(symbol)
@@ -83,6 +83,15 @@ def account_balance():
     print(f'\n\n|| Current Account Balance as of {now} ||')
     print(f'equity: {equity}')
     print(f'cash: {cash}')
+
+def get_most_active_stocks():
+ #### Get Top 20 Most Traded Stocks  ####
+    avmd = AlphaVantage(os.environ['alphavantkey'])
+    symbols = []
+    for sym in avmd.get_top_20_gla()['most_actively_traded']:
+        if int(float(sym['price'])) <= 20:
+            symbols.append(sym['ticker'])
+    return symbols
     
 if __name__ == '__main__':
     print()
@@ -100,16 +109,10 @@ if __name__ == '__main__':
                 sleep(60)
         print('\nMarket is now open... Let the games begin...')
 
-    #### Get Top 20 Most Traded Stocks  ####
-        avmd = AlphaVantage(os.environ['alphavantkey'])
-        symbols = []
-        for sym in avmd.get_top_20_gla()['most_actively_traded']:
-            if int(float(sym['price'])) <= 20:
-                symbols.append(sym['ticker'])
-
     #### Buy stocks ####
         # buy_stock_trail_stop_order('10', '3')
         # buy_stock_limit_order('10', '6')
+        symbols = get_most_active_stocks()
         buy_stock_market_order(symbols)
         
     #### Keep Positions open for a minimum of 24 hours
@@ -119,11 +122,11 @@ if __name__ == '__main__':
             print('Waiting a day before selling positions.')
             sleep(60)
 
-    #### Gather current time, set sell time to 3:55 PM ET.
+    #### Gather current time, set sell time to 1:30 PM ET.
     #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
-    #### If current time is > 3:53 PM ET, loop breaks and all positions are sold.
+    #### If current time is > 1:30 PM ET, loop breaks and all positions are sold.
         current_time = datetime.now().time()
-        close_all_positions_time = time(hour=15, minute=55)
+        close_all_positions_time = time(hour=13, minute=30)
         while current_time < close_all_positions_time:
             analyze_positions()
             current_time = datetime.now().time()
@@ -135,8 +138,13 @@ if __name__ == '__main__':
                 sleep(1)
             else:
                 continue
+
+    #### Open New Positions after 1:30PM ET
+        symbols = get_most_active_stocks()
+        buy_stock_market_order(symbols)
+
     #### Cancel open orders
-        sleep(10)
+        sleep(20)
         exchange.cancel_order_list()
 
     #### Wait for market to close before returning to beginning
