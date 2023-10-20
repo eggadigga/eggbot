@@ -108,6 +108,7 @@ if __name__ == '__main__':
                 print('\nMarket is currently closed...\n')
                 sleep(60)
         print('\nMarket is now open... Let the games begin...')
+        print(600)
 
     #### Buy stocks first thing in the morning per config file ####
         config.read(config_file, encoding='utf-8')
