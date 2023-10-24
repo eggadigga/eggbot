@@ -93,24 +93,33 @@ if __name__ == '__main__':
     print('Author: eggadigga\n')
     print('$'*75)
 
-### Show account balance
-    account_balance()
-### Gather available crypto tradeable assets in Alpaca
-    crypto_symbols = []
-    for asset in exchange.get_crypto_assets():
-        crypto_symbols.append(asset['symbol'])
+    while True:
+    ### Gather available crypto tradeable assets in Alpaca
+        crypto_symbols = []
+        for asset in exchange.get_crypto_assets():
+            crypto_symbols.append(asset['symbol'])
 
-### Buy crypto market order, shuffle list of symbols
-    buy_crypto_market_order(random.sample(crypto_symbols, len(crypto_symbols)))
-    sleep(90)
+    ### Buy crypto market order, shuffle list of symbols
+        print("Opening crypto positions...")
+        buy_crypto_market_order(random.sample(crypto_symbols, len(crypto_symbols)))
 
-### Loop through positions.
-    open_crypto_positions = check_open_positions()
-    while check_open_positions() > 0:
-        analyze_crypto_positions()
-        account_balance()
-        sleep(60)
-        
-    account_balance()
-    print('\nCrypto positions closed...')
+    ### Loop through positions for 3 hours. Close based on p/l percentages.
+    ### Loop breaks after 3 hours to then close all positions and restart cycle.
+        current_time = datetime.now()
+        close_all_positions_time = current_time + timedelta(hours=3)
+        while current_time < close_all_positions_time:
+            analyze_crypto_positions()
+            current_time = datetime.now()
+            account_balance()
+            ### break loop if all positions are closed
+            if check_open_positions == 0:
+                break
+            sleep(120)
+        for position in exchange.get_open_positions():
+            if position['asset_class'] == 'crypto':
+                exchange.close_single_position(position['symbol'])
+                sleep(1)
+            else:
+                continue
+        print('\nCrypto positions closed...')
 
