@@ -106,7 +106,7 @@ if __name__ == '__main__':
     ### Loop through positions for 3 hours. Close based on p/l percentages.
     ### Loop breaks after 3 hours to then close all positions and restart cycle.
         current_time = datetime.now()
-        close_all_positions_time = current_time + timedelta(hours=3)
+        close_all_positions_time = current_time + timedelta(hours=1)
         while current_time < close_all_positions_time:
             analyze_crypto_positions()
             current_time = datetime.now()
