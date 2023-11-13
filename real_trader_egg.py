@@ -112,7 +112,7 @@ if __name__ == '__main__':
                 print('\nMarket is currently closed...\n')
                 sleep(60)
         print('\nMarket is now open... Let the games begin...')
-        sleep(600)
+        sleep(600) ### Wait 10 minutes after market open to allow price moves
 
     #### Buy stocks first thing in the morning per config file ####
         config.read(config_file, encoding='utf-8')
