@@ -66,6 +66,8 @@ def analyze_crypto_positions():
         pnl_pct = position['unrealized_plpc']
         if pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) < -0.02:
            exchange.close_single_position(symbol)
+        elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) > 0.08:
+            continue
         elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) > 0.07:
             exchange.close_single_position(symbol)
         else:
