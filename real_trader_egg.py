@@ -65,25 +65,17 @@ def get_asset_info():
         asset_data_list.append(asset)
     return asset_data_list
 
-def buy_stock_trail_stop_order(amount, percentage):
-    for sym in symbol_list:
-        resp = exchange.buy_order_trail_stop(sym, amount, percentage)
-
-def buy_stock_limit_order(amount, limit):
-    for sym in symbol_list:
-        resp = exchange.buy_order_limit(sym, amount, limit)
-
 def buy_stock_market_order(symbols):
     ## Gather available cash
     account_data = exchange.get_account_info()
     cash = int(account_data['cash'].split('.')[0])
     ## Divide total cash by number of stocks to buy to get allotted cash for each stock.
-    cash_alllotted_per_stock = int(cash / len(symbols)) 
+    cash_allotted_per_stock = int(cash / len(symbols)) 
     for sym in symbols:
         ## Get current bid for stock
         try:
             bid = exchange.get_latest_stock_quote(sym, os.environ['apcarealkey'], os.environ['apcarealsecret'])['quote']['bp']
-            shares = str(int(cash_alllotted_per_stock / bid))
+            shares = str(int(cash_allotted_per_stock / bid))
             resp = exchange.buy_order_market(sym, shares)
         except ZeroDivisionError as e:
             print(f'Error: {e}')
@@ -153,7 +145,7 @@ def get_most_active_stocks():
     avmd = AlphaVantage(os.environ['alphavantkey'])
     symbols = []
     for sym in avmd.get_top_20_gla()['most_actively_traded']:
-        if int(float(sym['price'])) <= 20:
+        if int(float(sym['price'])) <= 100:
             symbols.append(sym['ticker'])
     return symbols
     
