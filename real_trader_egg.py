@@ -11,9 +11,10 @@ from configparser import ConfigParser
 from modules.alpaca_real import AlpacaReal
 from modules.av_market_data import AlphaVantage
 from pprint import pformat
-import os, sys
+import os, sys, socket, requests
 from datetime import datetime, time, timedelta
 from time import sleep
+from modules.emailTool import sendMail
 
 ## environment configuration
 main_dir = os.path.dirname(__file__)
@@ -24,6 +25,29 @@ stock_symbols_file = config_dir + '/stock_symbols.txt'
 config = ConfigParser()
 config.read(config_file, encoding='utf-8')
 load_dotenv(env_file)
+
+## Program failure notification
+def app_fail_smtp_alert(errmsg):
+    hostname = socket.gethostname()
+    prv_ipaddr = socket.gethostbyname(hostname)
+    pub_ipaddr = requests.get('http://ipinfo.io/ip', verify=False).text
+    mailusr = 'alerts.digga@gmail.com'
+    mailpw = os.getenv('mailpw')
+    sender = 'Ed Reyes <alerts.digga@gmail.com>'
+    receivers = ['eggadigga19@gmail.com']
+    cc = ['egga19@yahoo.com', 'eduardo.reyes120@gmail.com']
+    server = 'smtp.gmail.com'
+    sub = f'{hostname} - Eggadigga Stock Trade Bot Stopped Running'
+    body = f'''
+Bot stopped running unexpectedly
+
+Source hostname: {hostname}
+Internal IP: {prv_ipaddr}
+Public IP: {pub_ipaddr}
+
+Reason: {errmsg}
+    '''
+    sendMail(sender, receivers, cc, sub, body, mailusr, mailpw, server)
 
 ## Stock symbols
 symbol_list = [sym.split('\n')[0] for sym in open(stock_symbols_file).readlines()]
@@ -140,59 +164,65 @@ if __name__ == '__main__':
     print('Author: eggadigga\n')
     print('$'*75)
 
-    while True:
-    #### Loop until market opens
-        if exchange.get_market_clock()['is_open'] == False:
-            while exchange.get_market_clock()['is_open'] == False:
-                account_balance()
-                print('\nMarket is currently closed...\n')
-                sleep(60)
-        print('\nMarket is now open... Let the games begin...')
-        sleep(600) ### Wait 10 minutes after market open to allow price moves
+    try:
+        while True:
+        #### Loop until market opens
+            if exchange.get_market_clock()['is_open'] == False:
+                while exchange.get_market_clock()['is_open'] == False:
+                    account_balance()
+                    print('\nMarket is currently closed...\n')
+                    sleep(60)
+            print('\nMarket is now open... Let the games begin...')
+            sleep(600) ### Wait 10 minutes after market open to allow price moves
 
-    #### Buy stocks first thing in the morning per config file ####
-        config.read(config_file, encoding='utf-8')
-        buy_am = config['trade_env']['buy_am']
-        if  buy_am == 'yes':
+        #### Buy stocks first thing in the morning per config file ####
+            config.read(config_file, encoding='utf-8')
+            buy_am = config['trade_env']['buy_am']
+            if  buy_am == 'yes':
+                symbols = get_most_active_stocks()
+                buy_stock_market_order(symbols)
+                
+        #### Prevent pattern day trade by waiting until market close and reopen.
+                while exchange.get_market_clock()['is_open'] == True:
+                    account_balance()
+                    sleep(60)
+                sleep(2)
+                while exchange.get_market_clock()['is_open'] == False:
+                    account_balance()
+                    print('\nMarket is currently closed...\n')
+                    sleep(60)
+
+        #### Gather current time, set sell time to 1:30 PM ET.
+        #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
+        #### If current time is > 1:30 PM ET, loop breaks and all positions are sold.
+            current_time = datetime.now().time()
+            close_all_positions_time = time(hour=13, minute=30)
+            while current_time < close_all_positions_time:
+                analyze_positions()
+                current_time = datetime.now().time()
+                account_balance()
+                sleep(60)
+            for position in exchange.get_open_positions():
+                if position['asset_class'] == 'us_equity':
+                    exchange.close_single_position(position['symbol'])
+                    sleep(1)
+                else:
+                    continue
+
+        #### Open New Positions after 1:30PM ET
             symbols = get_most_active_stocks()
             buy_stock_market_order(symbols)
-            
-    #### Prevent pattern day trade by waiting until market close and reopen.
+
+        #### Cancel open orders
+            sleep(20)
+            exchange.cancel_order_list()
+
+        #### Wait for market to close before returning to beginning
             while exchange.get_market_clock()['is_open'] == True:
                 account_balance()
                 sleep(60)
-            sleep(2)
-            while exchange.get_market_clock()['is_open'] == False:
-                account_balance()
-                print('\nMarket is currently closed...\n')
-                sleep(60)
-
-    #### Gather current time, set sell time to 1:30 PM ET.
-    #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
-    #### If current time is > 1:30 PM ET, loop breaks and all positions are sold.
-        current_time = datetime.now().time()
-        close_all_positions_time = time(hour=13, minute=30)
-        while current_time < close_all_positions_time:
-            analyze_positions()
-            current_time = datetime.now().time()
-            account_balance()
-            sleep(60)
-        for position in exchange.get_open_positions():
-            if position['asset_class'] == 'us_equity':
-                exchange.close_single_position(position['symbol'])
-                sleep(1)
-            else:
-                continue
-
-    #### Open New Positions after 1:30PM ET
-        symbols = get_most_active_stocks()
-        buy_stock_market_order(symbols)
-
-    #### Cancel open orders
-        sleep(20)
-        exchange.cancel_order_list()
-
-    #### Wait for market to close before returning to beginning
-        while exchange.get_market_clock()['is_open'] == True:
-            account_balance()
-            sleep(60)
+    except Exception as e:
+        print('\nError: Stock Trading app stopped running')
+        print('Reason: ' + str(e))
+        app_fail_smtp_alert(e)
+        
