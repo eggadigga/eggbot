@@ -62,7 +62,7 @@ def buy_stock_market_order(symbols):
     for sym in symbols:
         ## Get current bid for stock
         try:
-            bid = exchange.get_latest_stock_quote(sym, os.environ['apcarealkey'], os.environ['apcarealsecret'])['quote']['bp']
+            bid = exchange.get_latest_stock_quote(sym)['quote']['bp']
             shares = str(int(cash_allotted_per_stock / bid))
             resp = exchange.buy_order_market(sym, shares)
         except ZeroDivisionError as e:
