@@ -182,6 +182,15 @@ class AlpacaReal():
         '''
         uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/quotes/latest'
         return self.session.get(uri, headers=self.common_headers, verify=True).json()
+    
+    def get_latest_stock_bar(self, symbol):
+        '''
+        Return latest stock bar.
+        :param symbol => Stock symbol.
+        '''
+        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/bars/latest'
+        params = {'feed': 'iex'}
+        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
 
     def get_latest_crypto_quote(self, symbol, real_apikey, real_apisecret):
         '''

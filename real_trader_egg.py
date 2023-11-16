@@ -62,7 +62,7 @@ def buy_stock_market_order(symbols):
     for sym in symbols:
         ## Get current bid for stock
         try:
-            bid = exchange.get_latest_stock_quote(sym)['quote']['bp']
+            bid = exchange.get_latest_stock_bar(sym)['bar']['c']
             shares = str(int(cash_allotted_per_stock / bid))
             resp = exchange.buy_order_market(sym, shares)
         except ZeroDivisionError as e:
@@ -135,7 +135,7 @@ def get_most_active_stocks(num_stocks, price_limit):
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
-        quote = exchange.get_latest_stock_quote(sym['symbol'])['quote']['bp']
+        quote = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
         if int(float(quote)) <= price_limit: ## limit to stocks under a specified price point
             symbols.append(sym['symbol'])
     return symbols
