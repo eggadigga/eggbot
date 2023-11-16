@@ -128,9 +128,11 @@ def account_balance():
     equity = exchange.get_account_info()['equity']
     cash = exchange.get_account_info()['cash']
     now = datetime.now()
+    positions = str(len(exchange.get_open_positions()))
     print(f'\n\n|| Current Account Balance as of {now} ||')
     print(f'equity: {equity}')
     print(f'cash: {cash}')
+    print(f'positions: {positions}')
 
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
@@ -207,11 +209,12 @@ if __name__ == '__main__':
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
             symbols = get_most_active_stocks(num_stocks=100, price_limit=40)
             account_balance()
+            print('\nOpening new positions in just a minute...\n')
             sleep(65) ## wait a little over a minute to avoid hitting rate limit
             buy_stock_market_order(random.sample(symbols, len(symbols)))
 
         #### Cancel open orders
-            sleep(20)
+            sleep(61)
             exchange.cancel_order_list()
 
         #### Wait for market to close before returning to beginning
