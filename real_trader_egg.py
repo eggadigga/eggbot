@@ -58,13 +58,16 @@ def buy_stock_market_order(symbols):
     account_data = exchange.get_account_info()
     cash = int(account_data['cash'].split('.')[0])
     ## Divide total cash by number of stocks to buy to get allotted cash for each stock.
-    cash_allotted_per_stock = int(cash / len(symbols)) 
+    cash_allotted_per_stock = int(cash / len(symbols))
     for sym in symbols:
         ## Get current bid for stock
         try:
-            bid = exchange.get_latest_stock_bar(sym)['bar']['c']
-            shares = str(int(cash_allotted_per_stock / bid))
-            resp = exchange.buy_order_market(sym, shares)
+            price = exchange.get_latest_stock_bar(sym)['bar']['c']
+            if price > cash_allotted_per_stock:
+              resp =  exchange.buy_order_market(sym, '1') ## if share price exceeds allotted cash for each stock in list buy 1 share.
+            else:
+                shares = str(int(cash_allotted_per_stock / price))
+                resp = exchange.buy_order_market(sym, shares)
         except ZeroDivisionError as e:
             print(f'Error: {e}')
 
@@ -163,7 +166,7 @@ if __name__ == '__main__':
             config.read(config_file, encoding='utf-8')
             buy_am = config['trade_env']['buy_am']
             if  buy_am == 'yes':
-                symbols = get_most_active_stocks(num_stocks=100, price_limit=60)
+                symbols = get_most_active_stocks(num_stocks=100, price_limit=30)
                 buy_stock_market_order(symbols)
                 
         #### Prevent pattern day trade by waiting until market close and reopen.
@@ -202,7 +205,7 @@ if __name__ == '__main__':
                         continue
 
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
-            symbols = get_most_active_stocks(num_stocks=100, price_limit=60)
+            symbols = get_most_active_stocks(num_stocks=100, price_limit=40)
             account_balance()
             sleep(65) ## wait a little over a minute to avoid hitting rate limit
             buy_stock_market_order(random.sample(symbols, len(symbols)))
