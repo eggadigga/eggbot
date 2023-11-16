@@ -11,7 +11,7 @@ from configparser import ConfigParser
 from modules.alpaca_real import AlpacaReal
 from modules.av_market_data import AlphaVantage
 from pprint import pformat
-import os, sys, socket, requests
+import os, sys, socket, requests, random
 from datetime import datetime, time, timedelta
 from time import sleep
 from modules.emailTool import sendMail
@@ -140,13 +140,15 @@ def account_balance():
     print(f'equity: {equity}')
     print(f'cash: {cash}')
 
-def get_most_active_stocks():
- #### Get Top 20 Most Traded Stocks  ####
-    avmd = AlphaVantage(os.environ['alphavantkey'])
+def get_most_active_stocks(num_stocks, price_limit):
+ #### Get Most Active Stocks ####
+ #### Limit number of stocks and specify stock price limit to trade
     symbols = []
-    for sym in avmd.get_top_20_gla()['most_actively_traded']:
-        if int(float(sym['price'])) <= 100:
-            symbols.append(sym['ticker'])
+    most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
+    for sym in most_active:
+        quote = exchange.get_latest_stock_quote(sym['symbol'])
+        if int(float(quote)) <= price_limit: ## limit to stocks under a specified price point
+            symbols.append(sym['symbol'])
     return symbols
     
 if __name__ == '__main__':
@@ -171,7 +173,7 @@ if __name__ == '__main__':
             config.read(config_file, encoding='utf-8')
             buy_am = config['trade_env']['buy_am']
             if  buy_am == 'yes':
-                symbols = get_most_active_stocks()
+                symbols = get_most_active_stocks(num_stocks=100, price_limit=60)
                 buy_stock_market_order(symbols)
                 
         #### Prevent pattern day trade by waiting until market close and reopen.
@@ -201,9 +203,10 @@ if __name__ == '__main__':
                 else:
                     continue
 
-        #### Open New Positions after 1:30PM ET
-            symbols = get_most_active_stocks()
-            buy_stock_market_order(symbols)
+        #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
+            symbols = get_most_active_stocks(num_stocks=100, price_limit=60)
+            sleep(65) ## wait a little over a minute to avoid hitting rate limit
+            buy_stock_market_order(random.sample(symbols, len(symbols)))
 
         #### Cancel open orders
             sleep(20)

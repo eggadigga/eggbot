@@ -175,18 +175,13 @@ class AlpacaReal():
             }
         return self.session.delete(uri, headers=self.common_headers, json=parameters, verify=True).json()
 
-    def get_latest_stock_quote(self, symbol, real_apikey, real_apisecret):
+    def get_latest_stock_quote(self, symbol):
         '''
-        Return latest stock quote. Shared between paper and live trading environments, hence passing real keys/secret.
+        Return latest stock quote.
         :param symbol => Stock symbol.
         '''
         uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/quotes/latest'
-        headers = {
-            'content-type': 'application/json',
-            'APCA-API-KEY-ID': real_apikey,
-            'APCA-API-SECRET-KEY': real_apisecret
-        }
-        return self.session.get(uri, headers=headers, verify=True).json()
+        return self.session.get(uri, headers=self.common_headers, verify=True).json()
 
     def get_latest_crypto_quote(self, symbol, real_apikey, real_apisecret):
         '''
@@ -201,3 +196,38 @@ class AlpacaReal():
         }
         params = {'symbols': symbol}
         return self.session.get(uri, headers=headers, params=params, verify=True).json()
+    
+    def get_most_active_stocks_by_volume(self, top:int):
+        '''
+        Get most active stocks by volume.
+        :param top => qty to return. Max is 100
+        '''
+        uri = 'https://data.alpaca.markets/v1beta1/screener/stocks/most-actives'
+        params = {
+            'by': 'volume',
+            'top': str(top)
+        }
+        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
+    
+    def get_most_active_stocks_by_trades(self, top:int):
+        '''
+        Get most active stocks by trades.
+        :param top => qty to return. Max is 100
+        '''
+        uri = 'https://data.alpaca.markets/v1beta1/screener/stocks/most-actives'
+        params = {
+            'by': 'trades',
+            'top': top
+        }
+        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
+    
+    def get_top_market_movers(self, top:int):
+        '''
+        Get top market movers.
+        :param top => qty to return. Max is 50
+        '''
+        uri = 'https://data.alpaca.markets/v1beta1/screener/stocks/movers'
+        params = {
+            'top': str(top)
+        }
+        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
