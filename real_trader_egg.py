@@ -135,7 +135,7 @@ def get_most_active_stocks(num_stocks, price_limit):
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
-        quote = exchange.get_latest_stock_quote(sym['symbol'])
+        quote = exchange.get_latest_stock_quote(sym['symbol'])['quote']['bp']
         if int(float(quote)) <= price_limit: ## limit to stocks under a specified price point
             symbols.append(sym['symbol'])
     return symbols
