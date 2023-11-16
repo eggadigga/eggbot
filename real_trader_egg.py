@@ -184,7 +184,7 @@ if __name__ == '__main__':
             close_all_positions_time = time(hour=13, minute=30)
             day_trade = 'n' ## default value 'n' assumes positions were not opened on current day.
             if current_time > close_all_positions_time:
-                prompt = '\nWere new positions opened today? Y or N?'
+                prompt = '\nWere new positions opened today? Y or N?\n'
                 day_trade = input(prompt).lower()
                 while len(day_trade) != 1 and day_trade not in ['y', 'n']:
                     day_trade = input(prompt).lower()
