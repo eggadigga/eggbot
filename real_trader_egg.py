@@ -21,7 +21,6 @@ main_dir = os.path.dirname(__file__)
 config_dir = main_dir + '/config'
 config_file = config_dir + '/config.ini'
 env_file = config_dir + '/.env'
-stock_symbols_file = config_dir + '/stock_symbols.txt'
 config = ConfigParser()
 config.read(config_file, encoding='utf-8')
 load_dotenv(env_file)
@@ -49,21 +48,10 @@ Reason: {errmsg}
     '''
     sendMail(sender, receivers, cc, sub, body, mailusr, mailpw, server)
 
-## Stock symbols
-symbol_list = [sym.split('\n')[0] for sym in open(stock_symbols_file).readlines()]
-
 ## Alpaca Instance Setup
 real_api_key = os.environ['apcarealkey']
 real_api_secret = os.environ['apcarealsecret']
 exchange = AlpacaReal(real_api_key, real_api_secret)
-
-## Get asset data from stock symbols in text file
-def get_asset_info():
-    asset_data_list = []
-    for sym in symbol_list:
-        asset = exchange.get_single_asset(sym)
-        asset_data_list.append(asset)
-    return asset_data_list
 
 def buy_stock_market_order(symbols):
     ## Gather available cash
@@ -167,7 +155,8 @@ if __name__ == '__main__':
                     print('\nMarket is currently closed...\n')
                     sleep(60)
             print('\nMarket is now open... Let the games begin...')
-            sleep(600) ### Wait 10 minutes after market open to allow price moves
+            if datetime.now().time() < time(hour=9, minute=40):
+                sleep(600) ### Wait 10 minutes after market open to allow price moves
 
         #### Buy stocks first thing in the morning per config file ####
             config.read(config_file, encoding='utf-8')
@@ -189,19 +178,27 @@ if __name__ == '__main__':
         #### Gather current time, set sell time to 1:30 PM ET.
         #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
         #### If current time is > 1:30 PM ET, loop breaks and all positions are sold.
+        #### If the program is started after 1:30PM ET, prompt will occur before continuing
             current_time = datetime.now().time()
             close_all_positions_time = time(hour=13, minute=30)
-            while current_time < close_all_positions_time:
-                analyze_positions()
-                current_time = datetime.now().time()
-                account_balance()
-                sleep(60)
-            for position in exchange.get_open_positions():
-                if position['asset_class'] == 'us_equity':
-                    exchange.close_single_position(position['symbol'])
-                    sleep(1)
-                else:
-                    continue
+            day_trade = 'n' ## default value 'n' assumes positions were not opened on current day.
+            if current_time > close_all_positions_time:
+                prompt = '\nWere new positions opened today? Y or N?'
+                day_trade = input(prompt).lower()
+                while len(day_trade) != 1 and day_trade not in ['y', 'n']:
+                    day_trade = input(prompt).lower()
+            if day_trade == 'n':
+                while current_time < close_all_positions_time:
+                    analyze_positions()
+                    current_time = datetime.now().time()
+                    account_balance()
+                    sleep(60)
+                for position in exchange.get_open_positions():
+                    if position['asset_class'] == 'us_equity':
+                        exchange.close_single_position(position['symbol'])
+                        sleep(1)
+                    else:
+                        continue
 
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
             symbols = get_most_active_stocks(num_stocks=100, price_limit=60)
