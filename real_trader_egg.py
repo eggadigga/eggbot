@@ -63,11 +63,15 @@ def buy_stock_market_order(symbols):
         ## Get current bid for stock
         try:
             price = exchange.get_latest_stock_bar(sym)['bar']['c']
-            if price > cash_allotted_per_stock:
-              resp =  exchange.buy_order_market(sym, '1') ## if share price exceeds allotted cash for each stock in list buy 1 share.
+            vwap = exchange.get_latest_stock_bar(sym)['bar']['vw']
+            if price > vwap: ### buy if current price is greater than VWAP.
+                if price > cash_allotted_per_stock:
+                    resp =  exchange.buy_order_market(sym, '1') ## if share price exceeds allotted cash for each stock in list buy 1 share.
+                else:
+                    shares = str(int(cash_allotted_per_stock / price))
+                    resp = exchange.buy_order_market(sym, shares)
             else:
-                shares = str(int(cash_allotted_per_stock / price))
-                resp = exchange.buy_order_market(sym, shares)
+                continue
         except ZeroDivisionError as e:
             print(f'Error: {e}')
 
@@ -168,7 +172,7 @@ if __name__ == '__main__':
             config.read(config_file, encoding='utf-8')
             buy_am = config['trade_env']['buy_am']
             if  buy_am == 'yes':
-                symbols = get_most_active_stocks(num_stocks=100, price_limit=30)
+                symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
                 buy_stock_market_order(symbols)
                 
         #### Prevent pattern day trade by waiting until market close and reopen.
@@ -207,7 +211,7 @@ if __name__ == '__main__':
                         continue
 
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
-            symbols = get_most_active_stocks(num_stocks=100, price_limit=40)
+            symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
             account_balance()
             print('\nOpening new positions in just a minute...\n')
             sleep(65) ## wait a little over a minute to avoid hitting rate limit
