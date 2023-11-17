@@ -63,15 +63,11 @@ def buy_stock_market_order(symbols):
         ## Get current bid for stock
         try:
             price = exchange.get_latest_stock_bar(sym)['bar']['c']
-            vwap = exchange.get_latest_stock_bar(sym)['bar']['vw']
-            if price > vwap: ### buy if current price is greater than VWAP.
-                if price > cash_allotted_per_stock:
-                    resp =  exchange.buy_order_market(sym, '1') ## if share price exceeds allotted cash for each stock in list buy 1 share.
-                else:
-                    shares = str(int(cash_allotted_per_stock / price))
-                    resp = exchange.buy_order_market(sym, shares)
+            if price > cash_allotted_per_stock:
+                resp =  exchange.buy_order_market(sym, '1') ## if share price exceeds allotted cash for each stock in list buy 1 share.
             else:
-                continue
+                shares = str(int(cash_allotted_per_stock / price))
+                resp = exchange.buy_order_market(sym, shares)
         except ZeroDivisionError as e:
             print(f'Error: {e}')
 
@@ -144,8 +140,9 @@ def get_most_active_stocks(num_stocks, price_limit):
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
-        quote = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-        if int(float(quote)) <= price_limit: ## limit to stocks under a specified price point
+        price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
+        vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
+        if int(float(price)) <= price_limit and price > vwap: ## limit to stocks under a specified price point and with price > vwap
             symbols.append(sym['symbol'])
     return symbols
     
