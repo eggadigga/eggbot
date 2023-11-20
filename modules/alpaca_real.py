@@ -240,3 +240,15 @@ class AlpacaReal():
             'top': str(top)
         }
         return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
+    
+    def get_most_active_crypto_by_volume(self, top:int):
+        '''
+        Get most active stocks by volume.
+        :param top => qty to return. Max is 100
+        '''
+        uri = 'https://data.alpaca.markets/v1beta1/screener/crypto/most-actives'
+        params = {
+            'by': 'volume',
+            'top': str(top)
+        }
+        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()

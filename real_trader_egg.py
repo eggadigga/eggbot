@@ -9,7 +9,6 @@ author: eggadigga
 from dotenv import load_dotenv
 from configparser import ConfigParser
 from modules.alpaca_real import AlpacaReal
-from modules.av_market_data import AlphaVantage
 from pprint import pformat
 import os, sys, socket, requests, random
 from datetime import datetime, time, timedelta
