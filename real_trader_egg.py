@@ -209,7 +209,7 @@ if __name__ == '__main__':
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
             symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
             account_balance()
-            print('\nOpening new positions in just a minute...\n')
+            print('\nOpening new positions with available funds in just a minute...\n')
             sleep(65) ## wait a little over a minute to avoid hitting rate limit
             buy_stock_market_order(random.sample(symbols, len(symbols)))
 
