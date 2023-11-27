@@ -192,8 +192,9 @@ if __name__ == '__main__':
             elif script_init_after_market_open == True:
                 script_init_after_market_open = False ## Change to False to avoid hitting this block in subsequent loops
                 print('\n!!!!!! Bot initiated during trading hours. Do you want to do any of the following? !!!!!!')
+                print('Note: Positions are opened regardless if at least 1 prompt is Yes (Y).')
                 prompt = '\nWere new positions opened today? Y or N?\n'
-                prompt1 = '\nOpen new positions (note: positions are opened regardless if any other prompts are Yes)? Y or N?\n'
+                prompt1 = '\nOpen new positions? Y or N?\n'
                 prompt2 = '\nClose all positions? Y or N?\n'
                 day_trade = input(prompt).lower()
                 while len(day_trade) != 1 and day_trade not in ['y', 'n']:
