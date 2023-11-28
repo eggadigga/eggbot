@@ -66,6 +66,12 @@ def analyze_crypto_positions():
         if pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) < -0.03:
            exchange.close_single_position(symbol)
         elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) > 0.30:
+            continue
+        elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) > 0.20:
+            exchange.close_single_position(symbol)
+        elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) > 0.16:
+            continue
+        elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) > 0.12:
             exchange.close_single_position(symbol)
         elif pnl_pct.startswith(('0.0000', '-0.0000')) == False and position['asset_class'] == 'crypto' and float(pnl_pct) > 0.08:
             continue
@@ -108,16 +114,16 @@ if __name__ == '__main__':
 
     ### Loop through positions for 3 hours. Close based on p/l percentages.
     ### Loop breaks after 3 hours to then close all positions and restart cycle.
-        current_time = datetime.now()
         close_all_positions_time = current_time + timedelta(hours=1, minutes=30)
-        while current_time < close_all_positions_time:
+        while datetime.now() < close_all_positions_time:
             analyze_crypto_positions()
             current_time = datetime.now()
             account_balance()
             ### break loop if all positions are closed
             if check_open_positions == 0:
                 break
-            sleep(120)
+            else:
+                sleep(120)
         for position in exchange.get_open_positions():
             if position['asset_class'] == 'crypto':
                 exchange.close_single_position(position['symbol'])
