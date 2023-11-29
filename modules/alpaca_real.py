@@ -134,12 +134,16 @@ class AlpacaReal():
             }
         return self.session.post(uri, headers=self.common_headers, json=parameters, verify=True).json()
     
-    def get_order_list(self):
+    def get_order_list(self, status):
         '''
         Return list of orders.
+        :param status => Status of order (open, closed, all)
         '''
         uri = self.base_uri + f'/v2/orders'
-        return self.session.get(uri, headers=self.common_headers, verify=True).json()
+        parameters = {
+            'status': status
+        }
+        return self.session.get(uri, headers=self.common_headers, params=parameters, verify=True).json()
     
     def cancel_order_list(self):
         '''
