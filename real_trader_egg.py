@@ -163,11 +163,11 @@ if __name__ == '__main__':
 
     order_time = time(hour=9, minute=40) ## time open/close position orders are allowed
     script_init_after_market_open = exchange.get_market_clock()['is_open'] ## see if app is run after market open
-    day_trade = 'n' ## default value 'n' assumes positions were not opened on current day.
-    
+
     try:
         while True:
         #### Loop until market opens
+            day_trade = 'n' ## default value 'n' assumes positions were not opened on current day.
             if exchange.get_market_clock()['is_open'] == False:
                 while exchange.get_market_clock()['is_open'] == False:
                     account_balance()
