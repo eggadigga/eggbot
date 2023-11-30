@@ -169,11 +169,10 @@ if __name__ == '__main__':
         while True:
         #### Loop until market opens
             day_trade = 'n' ## default value 'n' assumes positions were not opened on current day.
-            if exchange.get_market_clock()['is_open'] == False:
-                while exchange.get_market_clock()['is_open'] == False:
-                    account_balance()
-                    print('\nMarket is currently closed...\n')
-                    sleep(60)
+            while exchange.get_market_clock()['is_open'] == False:
+                account_balance()
+                print('\nMarket is currently closed...\n')
+                sleep(60)
             print('\nMarket is now open... Let the games begin...')
             if datetime.now().time() < order_time:
                 sleep(600) ### Wait 10 minutes after market open to allow price moves
