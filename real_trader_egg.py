@@ -180,16 +180,10 @@ if __name__ == '__main__':
         #### Gather current time, set sell time to 1:30 PM ET.
         #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
         #### If current time is > 1:30 PM ET, loop breaks and all positions are sold.
-        #### If the program is started after 1:30PM ET, prompt will occur before continuing
-        #### If the program is started after market open but before 1:30PM, prompt will occur to close and buy positions
+        #### If the program is started after market, prompts will occur to close and/or buy positions.
             current_time = datetime.now().time()
             close_all_positions_time = time(hour=13, minute=30)
-            if current_time > close_all_positions_time:
-                prompt = '\nWere new positions opened today? Y or N?\n'
-                day_trade = input(prompt).lower()
-                while len(day_trade) != 1 and day_trade not in ['y', 'n']:
-                    day_trade = input(prompt).lower()
-            elif script_init_after_market_open == True:
+            if script_init_after_market_open == True:
                 script_init_after_market_open = False ## Change to False to avoid hitting this block in subsequent loops
                 print('\n!!!!!! Bot initiated during trading hours. Do you want to do any of the following? !!!!!!')
                 print('Note: Positions are opened regardless if at least 1 prompt is Yes (Y).')
@@ -210,6 +204,9 @@ if __name__ == '__main__':
                     if sell == 'y':
                         close_all_positions()
                         day_trade = 'y'
+            else:
+                continue
+
             if day_trade == 'n':
                 while current_time < close_all_positions_time:
                     analyze_positions()
@@ -217,6 +214,8 @@ if __name__ == '__main__':
                     account_balance()
                     sleep(60)
                 close_all_positions()
+            else:
+                continue
 
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
             symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
