@@ -204,8 +204,6 @@ if __name__ == '__main__':
                     if sell == 'y':
                         close_all_positions()
                         day_trade = 'y'
-            else:
-                continue
 
             if day_trade == 'n':
                 while current_time < close_all_positions_time:
@@ -214,8 +212,6 @@ if __name__ == '__main__':
                     account_balance()
                     sleep(60)
                 close_all_positions()
-            else:
-                continue
 
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
             symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
