@@ -164,6 +164,7 @@ if __name__ == '__main__':
 
     order_time = time(hour=9, minute=40) ## time open/close position orders are allowed
     script_init_after_market_open = exchange.get_market_clock()['is_open'] ## see if app is run after market open
+    market_closed_msg = '\nMarket is currently closed...\n'
 
     try:
         while True:
@@ -173,13 +174,16 @@ if __name__ == '__main__':
             while exchange.get_market_clock()['is_open'] == False:
                 ## insert while loops to avoid GET fetch failure during assumed Alpaca maintenance
                 while datetime.now().time() < time(hour=4, minute=00): 
-                    account_balance()
-                    print('\nMarket is currently closed...\n')
+                    account_balance(market_closed_msg)
+                    print()
                     sleep(60)
                 while datetime.now().time() > time(hour=22, minute=00):
                     account_balance()
-                    print('\nMarket is currently closed...\n')
+                    print(market_closed_msg)
                     sleep(60)
+                account_balance()
+                print(market_closed_msg)
+                sleep(60)
             print('\nMarket is now open... Let the games begin...')
             if datetime.now().time() < order_time:
                 sleep(600) ### Wait 10 minutes after market open to allow price moves
