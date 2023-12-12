@@ -174,8 +174,8 @@ if __name__ == '__main__':
             while exchange.get_market_clock()['is_open'] == False:
                 ## insert while loops to avoid GET fetch failure during assumed Alpaca maintenance
                 while datetime.now().time() < time(hour=4, minute=00): 
-                    account_balance(market_closed_msg)
-                    print()
+                    account_balance()
+                    print(market_closed_msg)
                     sleep(60)
                 while datetime.now().time() > time(hour=22, minute=00):
                     account_balance()
