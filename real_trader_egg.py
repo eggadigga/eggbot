@@ -171,14 +171,16 @@ if __name__ == '__main__':
         #### Loop until market opens
             day_trade = 'n' ## default value 'n' assumes positions were not opened on current day.
             if exchange.get_market_clock()['is_open'] == False:
-                market_closed = False
-            while market_closed == False:
+                market_is_open = False
+            else:
+                market_is_open = True
+            while market_is_open == False:
                 ## Error handle during Alpaca GET request failure during presumed maintenance 
                 try:
                     account_balance()
                     print(market_closed_msg)
                     sleep(60)
-                    market_closed = exchange.get_market_clock()['is_open']
+                    market_is_open = exchange.get_market_clock()['is_open']
                 except Exception as e:
                     print(f'\nError: {e}\n')
                     sleep(120)
