@@ -195,6 +195,23 @@ class AlpacaReal():
         uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/bars/latest'
         params = {'feed': 'iex'}
         return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
+    
+    def get_historical_stock_bars(self, symbol, timeframe, start:str, end:str):
+        '''
+        Return historical stock bars.
+        :param symbol => Stock symbol.
+        :param timeframe => Timeframe (i.e. 1Day, 1Week, [1-59]Min)
+        :param start => Start date (YYYY-MM-DD)
+        :param end => End date (YYYY-MM-DD)
+        '''
+        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/bars/latest'
+        params = {
+            'feed': 'iex',
+            'timeframe': timeframe,
+            'start': start,
+            'end': end
+            }
+        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
 
     def get_latest_crypto_quote(self, symbol, real_apikey, real_apisecret):
         '''
