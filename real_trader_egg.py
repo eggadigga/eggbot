@@ -203,19 +203,19 @@ if __name__ == '__main__':
                 prompt1 = '\nOpen new positions? Y or N?\n'
                 prompt2 = '\nClose all positions? Y or N?\n'
                 day_trade = input(prompt).lower()
-                while len(day_trade) != 1 and day_trade not in ['y', 'n']:
+                while day_trade not in ['y', 'n']:
                     day_trade = input(prompt).lower()
                 buy = input(prompt1).lower()
-                while len(buy) != 1 and buy not in ['y', 'n']:
+                while buy not in ['y', 'n']:
                     buy = input(prompt1).lower()
-                    if buy == 'y':
-                        day_trade = 'y'
+                if buy == 'y':
+                    day_trade = 'y'
                 sell = input(prompt2).lower()
-                while len(sell) != 1 and sell not in ['y', 'n']:
+                while sell not in ['y', 'n']:
                     sell = input(prompt2).lower()
-                    if sell == 'y':
-                        close_all_positions()
-                        day_trade = 'y'
+                if sell == 'y':
+                    close_all_positions()
+                    day_trade = 'y'
 
             if day_trade == 'n':
                 while current_time < close_all_positions_time:

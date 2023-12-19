@@ -143,6 +143,46 @@ def account_balance():
     print(f'positions: {positions}')
     return cash
 
+def get_stock_rsi(symbols:list):
+    #### Get Relative Strength Index for 14 days
+    all_symbols_rsi = {}
+    today_raw = datetime.now()
+    today = datetime.now().strftime('%Y-%m-%d')
+    start_time = (today_raw - timedelta(days=25)).strftime('%Y-%m-%d')
+    end_time = today
+    timeframe = '1Day'
+    for sym in symbols: ### iterate through symbols and gather RSI
+        bars = exchange.get_historical_stock_bars(sym, timeframe, start_time, end_time)
+        gains = []
+        losses = []
+        for bar in range(0, 13): ### exclude today in iteration, and only get 14 day RSI
+            current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
+            prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
+            diff = float(current_cp - prev_cp)
+            if diff > 0:
+                gains.append(diff)
+                losses.append(0)
+            else:
+                losses.append(abs(diff)) ## losses expressed as positive values
+                gains.append(0)
+        try:
+            avg_gain = sum(gains) / 14
+        except ZeroDivisionError:
+            avg_gain = 1
+        try:
+            avg_loss = sum(losses) / 14
+        except ZeroDivisionError:
+            avg_loss = 1
+        try:
+            RS = avg_gain / avg_loss ## Relative Strength
+        except:
+            if avg_gain != 0 and avg_loss == 0:
+                RS = 100
+            elif avg_gain == 0 and avg_loss != 0:
+                RS = 0
+        RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
+        print(RSI)
+
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
  #### Limit number of stocks and specify stock price limit to trade
@@ -162,88 +202,17 @@ if __name__ == '__main__':
     print('Author: eggadigga\n')
     print('$'*75)
 
-    order_time = time(hour=9, minute=40) ## time open/close position orders are allowed
-    script_init_after_market_open = exchange.get_market_clock()['is_open'] ## see if app is run after market open
-    market_closed_msg = '\nMarket is currently closed...\n'
+# #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
+#     symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
+#     cash = account_balance()
+#     print('\nOpening new positions with available funds in just a minute...\n')
+#     sleep(65) ## wait a little over a minute to avoid hitting rate limit
 
-    try:
-        while True:
-        #### Loop until market opens
-            day_trade = 'n' ## default value 'n' assumes positions were not opened on current day.
-            if exchange.get_market_clock()['is_open'] == False:
-                market_is_open = False
-            else:
-                market_is_open = True
-            while market_is_open == False:
-                ## Error handle during Alpaca GET request failure during presumed maintenance 
-                try:
-                    account_balance()
-                    print(market_closed_msg)
-                    sleep(60)
-                    market_is_open = exchange.get_market_clock()['is_open']
-                except Exception as e:
-                    print(f'\nError: {e}\n')
-                    sleep(120)
-                    continue
-            print('\nMarket is now open... Let the games begin...')
-            if datetime.now().time() < order_time:
-                sleep(600) ### Wait 10 minutes after market open to allow price moves
-
-        #### Gather current time, set sell time to 1:30 PM ET.
-        #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
-        #### If current time is > 1:30 PM ET, loop breaks and all positions are sold.
-        #### If the program is started after market, prompts will occur to close and/or buy positions.
-            current_time = datetime.now().time()
-            close_all_positions_time = time(hour=13, minute=30)
-            if script_init_after_market_open == True:
-                script_init_after_market_open = False ## Change to False to avoid hitting this block in subsequent loops
-                print('\n!!!!!! Bot initiated during trading hours. Do you want to do any of the following? !!!!!!')
-                print('Note: Positions are opened regardless if at least 1 prompt is Yes (Y).')
-                prompt = '\nWere new positions opened today? Y or N?\n'
-                prompt1 = '\nOpen new positions? Y or N?\n'
-                prompt2 = '\nClose all positions? Y or N?\n'
-                day_trade = input(prompt).lower()
-                while day_trade not in ['y', 'n']:
-                    day_trade = input(prompt).lower()
-                buy = input(prompt1).lower()
-                while buy not in ['y', 'n']:
-                    buy = input(prompt1).lower()
-                if buy == 'y':
-                    day_trade = 'y'
-                sell = input(prompt2).lower()
-                while sell not in ['y', 'n']:
-                    sell = input(prompt2).lower()
-                if sell == 'y':
-                    close_all_positions()
-                    day_trade = 'y'
-
-            if day_trade == 'n':
-                while current_time < close_all_positions_time:
-                    analyze_positions()
-                    current_time = datetime.now().time()
-                    account_balance()
-                    sleep(60)
-                close_all_positions()
-
-        #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
-            symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
-            cash = account_balance()
-            print('\nOpening new positions with available funds in just a minute...\n')
-            sleep(65) ## wait a little over a minute to avoid hitting rate limit
-            buy_stock_market_order(random.sample(symbols, len(symbols)))
-            if cash > '10': ## buy more if there's spare 10 dollars or more in spare cash
-                buy_stock_market_order(random.sample(symbols, len(symbols)))
-
-        #### Cancel open orders
-            sleep(61)
-            exchange.cancel_order_list()
-
-        #### Wait for market to close before returning to beginning
-            while exchange.get_market_clock()['is_open'] == True:
-                account_balance()
-                sleep(60)
-    except Exception as e:
-        print('\nError: Stock Trading app stopped running')
-        print('Reason: ' + str(e))
-        app_fail_smtp_alert(e)
-        
+# #### Wait for market to close before returning to beginning
+#     while exchange.get_market_clock()['is_open'] == True:
+#         account_balance()
+#         sleep(60)
+#     print('\ngood night')
+    
+    symbie = ['nvda']
+    get_stock_rsi(symbie)

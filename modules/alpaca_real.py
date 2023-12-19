@@ -204,12 +204,13 @@ class AlpacaReal():
         :param start => Start date (YYYY-MM-DD)
         :param end => End date (YYYY-MM-DD)
         '''
-        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/bars/latest'
+        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/bars'
         params = {
             'feed': 'iex',
             'timeframe': timeframe,
             'start': start,
-            'end': end
+            'end': end,
+            'sort': 'desc'
             }
         return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
 
