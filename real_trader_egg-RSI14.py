@@ -77,7 +77,7 @@ def analyze_positions():
         symbol = position['symbol']
         pnl_pct = position['unrealized_plpc']
         excluded_zeros = ('0.0000', '-0.0000')
-        if pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.03:
+        if pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.01:
            exchange.close_single_position(symbol)
         elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 1.00:
             exchange.close_single_position(symbol)
@@ -184,7 +184,7 @@ def get_stock_rsi(symbols:list):
             elif avg_gain == 0 and avg_loss != 0:
                 RS = 0
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
-        if RSI <= 27 and RSI >= 5:
+        if RSI < 30 and RSI >= 2:
             oversold_symbols.append(sym)
         sleep(1) ## 1 second sleep for avoiding api rate limit
     return oversold_symbols
@@ -192,13 +192,12 @@ def get_stock_rsi(symbols:list):
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
  #### Limit number of stocks and specify stock price limit to trade
- #### Buy tickers with low RSI
+ #### Get tickers with RSI below 30
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
         price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-        vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
-        if int(float(price)) <= price_limit and price > vwap: ## limit to stocks under a specified price point and with price > vwap
+        if int(float(price)) <= price_limit:
             symbols.append(sym['symbol'])
     oversold_symbols = get_stock_rsi(symbols)
     return oversold_symbols
@@ -274,7 +273,7 @@ if __name__ == '__main__':
                 close_all_positions()
 
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
-            symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
+            symbols = get_most_active_stocks(num_stocks=100, price_limit=90)
             cash = account_balance()
             print('\nOpening new positions with available funds in just a minute...\n')
             sleep(65) ## wait a little over a minute to avoid hitting rate limit
