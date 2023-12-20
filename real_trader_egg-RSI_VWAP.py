@@ -197,7 +197,8 @@ def get_most_active_stocks(num_stocks, price_limit):
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
         price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-        if int(float(price)) <= price_limit:
+        vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
+        if int(float(price)) <= price_limit and price > vwap: ## limit to stocks under a specified price point and with price > vwap
             symbols.append(sym['symbol'])
     oversold_symbols = get_stock_rsi(symbols)
     return oversold_symbols
