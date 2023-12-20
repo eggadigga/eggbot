@@ -183,6 +183,7 @@ def get_stock_rsi(symbols:list):
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
         if RSI < 25:
             oversold_symbols.append(sym)
+        print(RSI)
     return oversold_symbols
 
 def get_most_active_stocks(num_stocks, price_limit):
@@ -216,5 +217,5 @@ if __name__ == '__main__':
 #         sleep(60)
 #     print('\ngood night')
     
-    symbie = ['plug']
+    symbie = ['tza']
     get_stock_rsi(symbie)
