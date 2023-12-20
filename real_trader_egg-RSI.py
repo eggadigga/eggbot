@@ -156,8 +156,11 @@ def get_stock_rsi(symbols:list):
         gains = []
         losses = []
         for bar in range(0, 14): ### exclude today in iteration, and only get 14 day RSI
-            current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
-            prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
+            try:
+                current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
+                prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
+            except:
+                continue
             diff = float(current_cp - prev_cp)
             if diff > 0:
                 gains.append(diff)
@@ -181,8 +184,9 @@ def get_stock_rsi(symbols:list):
             elif avg_gain == 0 and avg_loss != 0:
                 RS = 0
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
-        if RSI < 25:
+        if RSI <= 27 and RSI >= 5:
             oversold_symbols.append(sym)
+        sleep(1) ## 1 second sleep for avoiding api rate limit
     return oversold_symbols
 
 def get_most_active_stocks(num_stocks, price_limit):
