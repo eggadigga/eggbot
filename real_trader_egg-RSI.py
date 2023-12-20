@@ -143,9 +143,52 @@ def account_balance():
     print(f'positions: {positions}')
     return cash
 
+def get_stock_rsi(symbols:list):
+    #### Get Relative Strength Index for 14 days
+    oversold_symbols = []
+    today_raw = datetime.now()
+    today = datetime.now().strftime('%Y-%m-%d')
+    start_time = (today_raw - timedelta(days=25)).strftime('%Y-%m-%d')
+    end_time = today
+    timeframe = '1Day'
+    for sym in symbols: ### iterate through symbols and gather RSI
+        bars = exchange.get_historical_stock_bars(sym, timeframe, start_time, end_time)
+        gains = []
+        losses = []
+        for bar in range(0, 14): ### exclude today in iteration, and only get 14 day RSI
+            current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
+            prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
+            diff = float(current_cp - prev_cp)
+            if diff > 0:
+                gains.append(diff)
+                losses.append(0)
+            else:
+                losses.append(abs(diff)) ## losses expressed as positive values
+                gains.append(0)
+        try:
+            avg_gain = sum(gains) / 14
+        except ZeroDivisionError:
+            avg_gain = 1
+        try:
+            avg_loss = sum(losses) / 14
+        except ZeroDivisionError:
+            avg_loss = 1
+        try:
+            RS = avg_gain / avg_loss ## Relative Strength
+        except:
+            if avg_gain != 0 and avg_loss == 0:
+                RS = 100
+            elif avg_gain == 0 and avg_loss != 0:
+                RS = 0
+        RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
+        if RSI < 25:
+            oversold_symbols.append(sym)
+    return oversold_symbols
+
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
  #### Limit number of stocks and specify stock price limit to trade
+ #### Buy tickers with low RSI
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
@@ -153,8 +196,9 @@ def get_most_active_stocks(num_stocks, price_limit):
         vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
         if int(float(price)) <= price_limit and price > vwap: ## limit to stocks under a specified price point and with price > vwap
             symbols.append(sym['symbol'])
-    return symbols
-    
+    oversold_symbols = get_stock_rsi(symbols)
+    return oversold_symbols
+
 if __name__ == '__main__':
     print()
     print('$'*75)

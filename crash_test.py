@@ -145,7 +145,7 @@ def account_balance():
 
 def get_stock_rsi(symbols:list):
     #### Get Relative Strength Index for 14 days
-    all_symbols_rsi = {}
+    oversold_symbols = []
     today_raw = datetime.now()
     today = datetime.now().strftime('%Y-%m-%d')
     start_time = (today_raw - timedelta(days=25)).strftime('%Y-%m-%d')
@@ -155,7 +155,7 @@ def get_stock_rsi(symbols:list):
         bars = exchange.get_historical_stock_bars(sym, timeframe, start_time, end_time)
         gains = []
         losses = []
-        for bar in range(0, 13): ### exclude today in iteration, and only get 14 day RSI
+        for bar in range(0, 14): ### exclude today in iteration, and only get 14 day RSI
             current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
             prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
             diff = float(current_cp - prev_cp)
@@ -181,7 +181,9 @@ def get_stock_rsi(symbols:list):
             elif avg_gain == 0 and avg_loss != 0:
                 RS = 0
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
-        print(RSI)
+        if RSI < 25:
+            oversold_symbols.append(sym)
+    return oversold_symbols
 
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
@@ -214,5 +216,5 @@ if __name__ == '__main__':
 #         sleep(60)
 #     print('\ngood night')
     
-    symbie = ['nvda']
+    symbie = ['plug']
     get_stock_rsi(symbie)
