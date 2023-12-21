@@ -75,9 +75,9 @@ def analyze_positions():
     positions = exchange.get_open_positions()
     for position in positions:
         symbol = position['symbol']
-        pnl_pct = position['unrealized_plpc']
+        pnl_pct = position['unrealized_intraday_plpc']
         excluded_zeros = ('0.0000', '-0.0000')
-        if pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.01:
+        if pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.02:
            exchange.close_single_position(symbol)
         elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 1.00:
             exchange.close_single_position(symbol)
@@ -117,9 +117,9 @@ def analyze_positions():
             continue
         elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.12:
             exchange.close_single_position(symbol)
-        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.08:
+        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.06:
             continue
-        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.05:
+        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.02:
             exchange.close_single_position(symbol)
         else:
             continue
@@ -141,7 +141,7 @@ def account_balance():
     print(f'equity: {equity}')
     print(f'cash: {cash}')
     print(f'positions: {positions}')
-    return cash
+    return cash, positions
 
 def get_stock_rsi(symbols:list):
     #### Get Relative Strength Index for 14 days
@@ -269,13 +269,15 @@ if __name__ == '__main__':
                 while current_time < close_all_positions_time:
                     analyze_positions()
                     current_time = datetime.now().time()
-                    account_balance()
+                    cash, positions = account_balance()
+                    if positions == '0':
+                        break ## break loop if all positions were closed
                     sleep(60)
                 close_all_positions()
 
         #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
             symbols = get_most_active_stocks(num_stocks=100, price_limit=90)
-            cash = account_balance()
+            cash, positions = account_balance()
             print('\nOpening new positions with available funds in just a minute...\n')
             sleep(65) ## wait a little over a minute to avoid hitting rate limit
             buy_stock_market_order(random.sample(symbols, len(symbols)))
