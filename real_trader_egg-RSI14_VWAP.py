@@ -232,7 +232,7 @@ if __name__ == '__main__':
                     continue
             print('\nMarket is now open... Let the games begin...')
             if datetime.now().time() < order_time:
-                sleep(600) ### Wait 10 minutes after market open to allow price moves
+                sleep(300) ### Wait 5 minutes after market open to allow price moves
 
         #### Gather current time, set sell time to 1:30 PM ET.
         #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
