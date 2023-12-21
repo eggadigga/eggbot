@@ -156,11 +156,8 @@ def get_stock_rsi(symbols:list):
         gains = []
         losses = []
         for bar in range(0, 14): ### exclude today in iteration, and only get 14 day RSI
-            try:
-                current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
-                prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
-            except:
-                continue
+            current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
+            prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
             diff = float(current_cp - prev_cp)
             if diff > 0:
                 gains.append(diff)
