@@ -207,7 +207,7 @@ if __name__ == '__main__':
     print('Author: eggadigga\n')
     print('$'*75)
 
-    order_time = time(hour=9, minute=40) ## time open/close position orders are allowed
+    order_time = time(hour=9, minute=35) ## time open/close position orders are allowed
     script_init_after_market_open = exchange.get_market_clock()['is_open'] ## see if app is run after market open
     market_closed_msg = '\nMarket is currently closed...\n'
 
@@ -231,8 +231,10 @@ if __name__ == '__main__':
                     sleep(120)
                     continue
             print('\nMarket is now open... Let the games begin...')
-            if datetime.now().time() < order_time:
-                sleep(300) ### Wait 5 minutes after market open to allow price moves
+            if script_init_after_market_open == False:
+                ### Wait 5 minutes after market open before position analyses
+                while datetime.now().time() < order_time:
+                    sleep(1)
 
         #### Gather current time, set sell time to 1:30 PM ET.
         #### While loop analyzing positions throughout day, and sell based on unrealized pnl.
