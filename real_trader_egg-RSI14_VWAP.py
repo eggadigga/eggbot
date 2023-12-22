@@ -119,7 +119,7 @@ def analyze_positions():
             exchange.close_single_position(symbol)
         elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.06:
             continue
-        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.02:
+        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.03:
             exchange.close_single_position(symbol)
         else:
             continue

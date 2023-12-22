@@ -217,5 +217,5 @@ if __name__ == '__main__':
 #         sleep(60)
 #     print('\ngood night')
     
-    symbie = ['tza']
+    symbie = ['blue']
     get_stock_rsi(symbie)
