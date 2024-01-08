@@ -156,8 +156,13 @@ def get_stock_rsi(symbols:list):
         gains = []
         losses = []
         for bar in range(0, 14): ### exclude today in iteration, and only get 14 day RSI
-            current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
-            prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
+            try:
+                current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
+                prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
+            except:
+                ## Catch failure if symbol doesn't return 14 or more bars. Also continue looping
+                print(f'\n{sym} has only {str(len(bars))} bars returned.')
+                continue
             diff = float(current_cp - prev_cp)
             if diff > 0:
                 gains.append(diff)
@@ -278,7 +283,8 @@ if __name__ == '__main__':
             symbols = get_most_active_stocks(num_stocks=100, price_limit=90)
             cash, positions = account_balance()
             if len(symbols) >= 1:
-                print('\nOpening new positions with available funds in just a minute...\n')
+                print('\nOpening new positions with available funds in just a minute. Purchase randomized for below symbols...\n\n')
+                print(* symbols, sep='\n')
                 sleep(65) ## wait a little over a minute to avoid hitting rate limit
                 buy_stock_market_order(random.sample(symbols, len(symbols)))
                 if cash > '10': ## buy more if there's spare 10 dollars or more in spare cash
@@ -298,4 +304,5 @@ if __name__ == '__main__':
         print('\nError: Stock Trading app stopped running')
         print('Reason: ' + str(e))
         app_fail_smtp_alert(e)
+        raise(Exception)
         

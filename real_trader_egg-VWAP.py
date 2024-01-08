@@ -233,7 +233,8 @@ if __name__ == '__main__':
             symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
             cash, positions = account_balance()
             if len(symbols) >= 1:
-                print('\nOpening new positions with available funds in just a minute...\n')
+                print('\nOpening new positions with available funds in just a minute. Purchase randomized for below symbols...\n\n')
+                print(* symbols, sep='\n')
                 sleep(65) ## wait a little over a minute to avoid hitting rate limit
                 buy_stock_market_order(random.sample(symbols, len(symbols)))
                 if cash > '10': ## buy more if there's spare 10 dollars or more in spare cash
