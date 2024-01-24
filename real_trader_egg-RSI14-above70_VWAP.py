@@ -186,7 +186,7 @@ def get_stock_rsi(symbols:list):
             elif avg_gain == 0 and avg_loss != 0:
                 RS = 0
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
-        if RSI > 70 and RSI <= 92:
+        if RSI > 70 and RSI <= 98:
             overbought_symbols.append(sym)
         sleep(1) ## 1 second sleep for avoiding api rate limit
     return overbought_symbols
