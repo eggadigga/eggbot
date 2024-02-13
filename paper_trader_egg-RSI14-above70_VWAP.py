@@ -48,8 +48,8 @@ Reason: {errmsg}
     sendMail(sender, receivers, cc, sub, body, mailusr, mailpw, server)
 
 ## Alpaca Instance Setup
-real_api_key = os.environ['apcarealkey']
-real_api_secret = os.environ['apcarealsecret']
+real_api_key = os.environ['apcapaperkey']
+real_api_secret = os.environ['apcapapersecret']
 exchange = AlpacaPaper(real_api_key, real_api_secret)
 
 def buy_stock_market_order(symbols):
