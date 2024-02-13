@@ -184,7 +184,7 @@ class AlpacaPaper():
         Return latest stock quote.
         :param symbol => Stock symbol.
         '''
-        uri = f'https://data.sandbox.alpaca.markets/v2/stocks/{symbol.upper()}/quotes/latest'
+        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/quotes/latest'
         return self.session.get(uri, headers=self.common_headers, verify=True).json()
     
     def get_latest_stock_bar(self, symbol):
@@ -192,7 +192,7 @@ class AlpacaPaper():
         Return latest stock bar.
         :param symbol => Stock symbol.
         '''
-        uri = f'https://data.sandbox.alpaca.markets/v2/stocks/{symbol.upper()}/bars/latest'
+        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/bars/latest'
         params = {'feed': 'iex'}
         return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
     
@@ -204,7 +204,7 @@ class AlpacaPaper():
         :param start => Start date (YYYY-MM-DD)
         :param end => End date (YYYY-MM-DD)
         '''
-        uri = f'https://data.sandbox.alpaca.markets/v2/stocks/{symbol.upper()}/bars'
+        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/bars'
         params = {
             'feed': 'iex',
             'timeframe': timeframe,
@@ -219,7 +219,7 @@ class AlpacaPaper():
         Return latest crypto quote. Shared between paper and live trading environments, hence passing real keys/secret.
         :param symbol => Crypto symbol.
         '''
-        uri = f'https://data.sandbox.alpaca.markets/v1beta3/crypto/us/latest/quotes'
+        uri = f'https://data.alpaca.markets/v1beta3/crypto/us/latest/quotes'
         headers = {
             'content-type': 'application/json',
             'APCA-API-KEY-ID': real_apikey,
@@ -233,7 +233,7 @@ class AlpacaPaper():
         Get most active stocks by volume.
         :param top => qty to return. Max is 100
         '''
-        uri = 'https://data.sandbox.alpaca.markets/v1beta1/screener/stocks/most-actives'
+        uri = 'https://data.alpaca.markets/v1beta1/screener/stocks/most-actives'
         params = {
             'by': 'volume',
             'top': str(top)
@@ -245,7 +245,7 @@ class AlpacaPaper():
         Get most active stocks by trades.
         :param top => qty to return. Max is 100
         '''
-        uri = 'https://data.sandbox.alpaca.markets/v1beta1/screener/stocks/most-actives'
+        uri = 'https://data.alpaca.markets/v1beta1/screener/stocks/most-actives'
         params = {
             'by': 'trades',
             'top': top
@@ -257,7 +257,7 @@ class AlpacaPaper():
         Get top market movers.
         :param top => qty to return. Max is 50
         '''
-        uri = 'https://data.sandbox.alpaca.markets/v1beta1/screener/stocks/movers'
+        uri = 'https://data.alpaca.markets/v1beta1/screener/stocks/movers'
         params = {
             'top': str(top)
         }
@@ -268,7 +268,7 @@ class AlpacaPaper():
         Get most active stocks by volume.
         :param top => qty to return. Max is 100
         '''
-        uri = 'https://data.sandbox.alpaca.markets/v1beta1/screener/crypto/most-actives'
+        uri = 'https://data.alpaca.markets/v1beta1/screener/crypto/most-actives'
         params = {
             'by': 'volume',
             'top': str(top)
