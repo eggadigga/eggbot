@@ -1,7 +1,7 @@
 class AlpacaPaper():
     def __init__(self, api_key, api_secret):
         '''
-        Alpaca API instance for Papger Trading
+        Alpaca API instance for Paper Trading
         :param api_key => Alpaca Paper API Key
         :param api_secret => Alpaca Paper API Secret
         '''
@@ -134,16 +134,12 @@ class AlpacaPaper():
             }
         return self.session.post(uri, headers=self.common_headers, json=parameters, verify=True).json()
     
-    def get_order_list(self, status):
+    def get_order_list(self):
         '''
         Return list of orders.
-        :param status => Status of order (open, closed, all)
         '''
         uri = self.base_uri + f'/v2/orders'
-        parameters = {
-            'status': status
-        }
-        return self.session.get(uri, headers=self.common_headers, params=parameters, verify=True).json()
+        return self.session.get(uri, headers=self.common_headers, verify=True).json()
     
     def cancel_order_list(self):
         '''
@@ -179,47 +175,25 @@ class AlpacaPaper():
             }
         return self.session.delete(uri, headers=self.common_headers, json=parameters, verify=True).json()
 
-    def get_latest_stock_quote(self, symbol):
+    def get_latest_stock_quote(self, symbol, real_apikey, real_apisecret):
         '''
-        Return latest stock quote.
+        Return latest stock quote. Shared between paper and live trading environments, hence passing real keys/secret.
         :param symbol => Stock symbol.
         '''
-        uri = f'https://data.sandbox.alpaca.markets/v2/stocks/{symbol.upper()}/quotes/latest'
-        return self.session.get(uri, headers=self.common_headers, verify=True).json()
-    
-    def get_latest_stock_bar(self, symbol):
-        '''
-        Return latest stock bar.
-        :param symbol => Stock symbol.
-        '''
-        uri = f'https://data.sandbox.alpaca.markets/v2/stocks/{symbol.upper()}/bars/latest'
-        params = {'feed': 'iex'}
-        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
-    
-    def get_historical_stock_bars(self, symbol, timeframe, start:str, end:str):
-        '''
-        Return historical stock bars.
-        :param symbol => Stock symbol.
-        :param timeframe => Timeframe (i.e. 1Day, 1Week, [1-59]Min)
-        :param start => Start date (YYYY-MM-DD)
-        :param end => End date (YYYY-MM-DD)
-        '''
-        uri = f'https://data.sandbox.alpaca.markets/v2/stocks/{symbol.upper()}/bars'
-        params = {
-            'feed': 'iex',
-            'timeframe': timeframe,
-            'start': start,
-            'end': end,
-            'sort': 'desc'
-            }
-        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
+        uri = f'https://data.alpaca.markets/v2/stocks/{symbol.upper()}/quotes/latest'
+        headers = {
+            'content-type': 'application/json',
+            'APCA-API-KEY-ID': real_apikey,
+            'APCA-API-SECRET-KEY': real_apisecret
+        }
+        return self.session.get(uri, headers=headers, verify=True).json()
 
     def get_latest_crypto_quote(self, symbol, real_apikey, real_apisecret):
         '''
         Return latest crypto quote. Shared between paper and live trading environments, hence passing real keys/secret.
         :param symbol => Crypto symbol.
         '''
-        uri = f'https://data.sandbox.alpaca.markets/v1beta3/crypto/us/latest/quotes'
+        uri = f'https://data.alpaca.markets/v1beta3/crypto/us/latest/quotes'
         headers = {
             'content-type': 'application/json',
             'APCA-API-KEY-ID': real_apikey,
@@ -227,50 +201,3 @@ class AlpacaPaper():
         }
         params = {'symbols': symbol}
         return self.session.get(uri, headers=headers, params=params, verify=True).json()
-    
-    def get_most_active_stocks_by_volume(self, top:int):
-        '''
-        Get most active stocks by volume.
-        :param top => qty to return. Max is 100
-        '''
-        uri = 'https://data.sandbox.alpaca.markets/v1beta1/screener/stocks/most-actives'
-        params = {
-            'by': 'volume',
-            'top': str(top)
-        }
-        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
-    
-    def get_most_active_stocks_by_trades(self, top:int):
-        '''
-        Get most active stocks by trades.
-        :param top => qty to return. Max is 100
-        '''
-        uri = 'https://data.sandbox.alpaca.markets/v1beta1/screener/stocks/most-actives'
-        params = {
-            'by': 'trades',
-            'top': top
-        }
-        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
-    
-    def get_top_market_movers(self, top:int):
-        '''
-        Get top market movers.
-        :param top => qty to return. Max is 50
-        '''
-        uri = 'https://data.sandbox.alpaca.markets/v1beta1/screener/stocks/movers'
-        params = {
-            'top': str(top)
-        }
-        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
-    
-    def get_most_active_crypto_by_volume(self, top:int):
-        '''
-        Get most active stocks by volume.
-        :param top => qty to return. Max is 100
-        '''
-        uri = 'https://data.sandbox.alpaca.markets/v1beta1/screener/crypto/most-actives'
-        params = {
-            'by': 'volume',
-            'top': str(top)
-        }
-        return self.session.get(uri, headers=self.common_headers, params=params, verify=True).json()
