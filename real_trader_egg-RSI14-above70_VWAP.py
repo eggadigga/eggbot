@@ -200,7 +200,7 @@ def get_most_active_stocks(num_stocks, price_limit):
     for sym in most_active:
         price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
         vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
-        if int(float(price)) <= price_limit and price > vwap: ## limit to stocks under a specified price point and with price > vwap
+        if int(float(price)) <= price_limit and price < vwap: ## limit to stocks under a specified price point and with price below vwap
             symbols.append(sym['symbol'])
     overbought_symbols = get_stock_rsi(symbols)
     return overbought_symbols
@@ -290,7 +290,7 @@ if __name__ == '__main__':
                 if cash > '10': ## buy more if there's spare 10 dollars or more in spare cash
                     buy_stock_market_order(random.sample(symbols, len(symbols)))
             else:
-                print('\n No stocks returned with RSI under 30 and current price above VWAP.\nLet script continue until next day or re-run script at some point today.')
+                print('\n No stocks returned with RSI under 30 and current price below VWAP.\nLet script continue until next day or re-run script at some point today.')
 
         #### Cancel open orders
             sleep(61)

@@ -41,10 +41,10 @@ def get_most_active_stocks(num_stocks, price_limit, type_):
         price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
         vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
         if type_ == 'call':
-            if int(float(price)) <= price_limit and price > vwap: ## use for call
+            if int(float(price)) <= price_limit and price < vwap: ## use for call
                 symbols.append(sym['symbol'])
         else:
-            if int(float(price)) <= price_limit and price < vwap: ## use for put
+            if int(float(price)) <= price_limit and price > vwap: ## use for put
                 symbols.append(sym['symbol'])
     return symbols
     
