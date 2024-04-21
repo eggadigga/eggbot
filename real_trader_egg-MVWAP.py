@@ -163,7 +163,7 @@ def get_mvwap(symbols:list):
                 print(f'\n{sym} has only {str(len(bars))} bars returned.')
                 continue
             vwap_each_day.append(vwap)
-        mvwap = sum(vwap_each_day)/len(vwap_each_day)
+        mvwap = sum(vwap_each_day)/float(len(vwap_each_day))
         if current_price < mvwap:
             syms_below_mvwap.append(sym)
         vwap_each_day.clear() ## reset list for next symbol in loop
