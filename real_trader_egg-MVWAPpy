@@ -143,69 +143,45 @@ def account_balance():
     print(f'positions: {positions}')
     return cash, positions
 
-def get_stock_rsi(symbols:list):
-    #### Get Relative Strength Index for 14 days
-    oversold_symbols = []
+def get_mvwap(symbols:list):
+    #### Get Moving Volume Weighted Average Price (MVWAP)
+    syms_below_mvwap = []
     today_raw = datetime.now()
     today = datetime.now().strftime('%Y-%m-%d')
-    start_time = (today_raw - timedelta(days=25)).strftime('%Y-%m-%d')
+    start_time = (today_raw - timedelta(days=20)).strftime('%Y-%m-%d')
     end_time = today
     timeframe = '1Day'
     for sym in symbols: ### iterate through symbols and gather RSI
         bars = exchange.get_historical_stock_bars(sym, timeframe, start_time, end_time)
-        gains = []
-        losses = []
-        for bar in range(0, 14): ### exclude today in iteration, and only get 14 day RSI
+        current_price = float(bars['bars'][0]['c'])
+        vwap_each_day = []
+        for bar in range(0, 14): ### exclude today in iteration, and only get 14 day mvwap
             try:
-                current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
-                prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
+                vwap = float(bars['bars'][bar]['vw']) ### close vwap for current day's in loop
             except:
                 ## Catch failure if symbol doesn't return 14 or more bars. Also continue looping
                 print(f'\n{sym} has only {str(len(bars))} bars returned.')
                 continue
-            diff = float(current_cp - prev_cp)
-            if diff > 0:
-                gains.append(diff)
-                losses.append(0)
-            else:
-                losses.append(abs(diff)) ## losses expressed as positive values
-                gains.append(0)
-        try:
-            avg_gain = sum(gains) / 14
-        except ZeroDivisionError:
-            avg_gain = 1
-        try:
-            avg_loss = sum(losses) / 14
-        except ZeroDivisionError:
-            avg_loss = 1
-        try:
-            RS = avg_gain / avg_loss ## Relative Strength
-        except:
-            if avg_gain != 0 and avg_loss == 0:
-                RS = 100
-            elif avg_gain == 0 and avg_loss != 0:
-                RS = 0
-        RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
-        if RSI < 30 and RSI >= 2:
-            oversold_symbols.append(sym)
-        gains.clear() ## reset list for next symbol
-        losses.clear() ## reset list for next symbol
+            vwap_each_day.append(vwap)
+        mvwap = sum(vwap_each_day)/len(vwap_each_day)
+        if current_price < mvwap:
+            syms_below_mvwap.append(sym)
+        vwap_each_day.clear() ## reset list for next symbol in loop
         sleep(1) ## 1 second sleep for avoiding api rate limit
-    return oversold_symbols
+    return syms_below_mvwap
 
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
  #### Limit number of stocks and specify stock price limit to trade
- #### Get tickers with RSI below 30 and Price below VWAP
+ #### Get tickers and get mvwap
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
         price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-        vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
-        if int(float(price)) <= price_limit and price < vwap: ## limit to stocks under a specified price point and with price below vwap
+        if int(float(price)) <= price_limit: ## limit to stocks under a specified price point
             symbols.append(sym['symbol'])
-    oversold_symbols = get_stock_rsi(symbols)
-    return oversold_symbols
+    mvwap = get_mvwap(symbols)
+    return mvwap
 
 if __name__ == '__main__':
     print()
@@ -292,7 +268,7 @@ if __name__ == '__main__':
                 if cash > '10': ## buy more if there's spare 10 dollars or more in spare cash
                     buy_stock_market_order(random.sample(symbols, len(symbols)))
             else:
-                print('\n No stocks returned with RSI under 30 and current price below VWAP.\nLet script continue until next day or re-run script at some point today.')
+                print('\n No stocks returned with matching mvwap.\nLet script continue until next day or re-run script at some point today.')
 
         #### Cancel open orders
             sleep(61)
@@ -307,4 +283,3 @@ if __name__ == '__main__':
         print('Reason: ' + str(e))
         app_fail_smtp_alert(e)
         raise(Exception)
-        
