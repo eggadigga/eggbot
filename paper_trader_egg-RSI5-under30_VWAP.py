@@ -188,6 +188,8 @@ def get_stock_rsi(symbols:list):
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
         if RSI < 30 and RSI >= 2:
             overbought_symbols.append(sym)
+        gains.clear() ## reset list for next symbol
+        losses.clear() ## reset list for next symbol
         sleep(1) ## 1 second sleep for avoiding api rate limit
     return overbought_symbols
 
