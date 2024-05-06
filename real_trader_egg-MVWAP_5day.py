@@ -176,10 +176,13 @@ def get_most_active_stocks(num_stocks, price_limit):
  #### Get tickers and get mvwap
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
-    for sym in most_active:
-        price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-        if int(float(price)) <= price_limit: ## limit to stocks under a specified price point
-            symbols.append(sym['symbol'])
+    try:
+        for sym in most_active:
+            price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
+            if int(float(price)) <= price_limit: ## limit to stocks under a specified price point
+                symbols.append(sym['symbol'])
+    except Exception as e:
+        print(e)
     mvwap = get_mvwap(symbols)
     return mvwap
 
