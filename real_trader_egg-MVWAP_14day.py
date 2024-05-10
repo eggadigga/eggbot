@@ -151,18 +151,22 @@ def get_mvwap(symbols:list):
     start_time = (today_raw - timedelta(days=20)).strftime('%Y-%m-%d')
     end_time = today
     timeframe = '1Day'
-    for sym in symbols: ### iterate through symbols and gather RSI
-        bars = exchange.get_historical_stock_bars(sym, timeframe, start_time, end_time)
-        current_price = float(bars['bars'][0]['c'])
+    for sym in symbols: ### iterate through symbols and gather mwvap
         vwap_each_day = []
-        for bar in range(0, 14): ### exclude today in iteration, and only get 14 day mvwap
-            try:
-                vwap = float(bars['bars'][bar]['vw']) ### close vwap for current day's in loop
-            except:
-                ## Catch failure if symbol doesn't return 14 or more bars. Also continue looping
-                print(f'\n{sym} has only {str(len(bars))} bars returned.')
-                continue
-            vwap_each_day.append(vwap)
+        try:
+            bars = exchange.get_historical_stock_bars(sym, timeframe, start_time, end_time)
+            current_price = float(bars['bars'][0]['c'])
+            for bar in range(0, 14): ### exclude today in iteration, and only get 5 day mvwap
+                try:
+                    vwap = float(bars['bars'][bar]['vw']) ### close vwap for current day's in loop
+                except:
+                    ## Catch failure if symbol doesn't return 14 or more bars. Also continue looping
+                    print(f'\n{sym} has only {str(len(bars))} bars returned.')
+                    continue
+                vwap_each_day.append(vwap)
+        except Exception as e:
+            print(e)
+            print(f'Message: {bars}')
         mvwap = sum(vwap_each_day)/float(len(vwap_each_day))
         if current_price < mvwap:
             syms_below_mvwap.append(sym)
@@ -184,6 +188,7 @@ def get_most_active_stocks(num_stocks, price_limit):
         except Exception as e:
             print(e)
             print(f'Exception occurred in fetching this ticker: "{sym}"')
+    sleep(60) ## sleep for a minute before beginning MVWAP analysis to avoid rate limit hit
     mvwap = get_mvwap(symbols)
     return mvwap
 
