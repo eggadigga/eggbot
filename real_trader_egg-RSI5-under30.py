@@ -8,7 +8,7 @@ author: eggadigga
 
 from dotenv import load_dotenv
 from configparser import ConfigParser
-from modules.alpaca_paper import AlpacaPaper
+from modules.alpaca_real import AlpacaReal
 from pprint import pformat
 import os, sys, socket, requests, random
 from datetime import datetime, time, timedelta
@@ -48,9 +48,9 @@ Reason: {errmsg}
     sendMail(sender, receivers, cc, sub, body, mailusr, mailpw, server)
 
 ## Alpaca Instance Setup
-real_api_key = os.environ['apcapaperkey']
-real_api_secret = os.environ['apcapapersecret']
-exchange = AlpacaPaper(real_api_key, real_api_secret)
+real_api_key = os.environ['apcarealkey']
+real_api_secret = os.environ['apcarealsecret']
+exchange = AlpacaReal(real_api_key, real_api_secret)
 
 def buy_stock_market_order(symbols):
     ## Gather available cash
@@ -77,7 +77,7 @@ def analyze_positions():
         symbol = position['symbol']
         pnl_pct = position['unrealized_intraday_plpc']
         excluded_zeros = ('0.0000', '-0.0000')
-        if pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.03:
+        if pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.02:
            exchange.close_single_position(symbol)
         elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 1.00:
             exchange.close_single_position(symbol)
@@ -117,9 +117,9 @@ def analyze_positions():
             continue
         elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.12:
             exchange.close_single_position(symbol)
-        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.08:
+        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.06:
             continue
-        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.07:
+        elif pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) > 0.03:
             exchange.close_single_position(symbol)
         else:
             continue
@@ -143,18 +143,74 @@ def account_balance():
     print(f'positions: {positions}')
     return cash, positions
 
+def get_stock_rsi(symbols:list):
+    #### Get Relative Strength Index for 14 days
+    oversold_symbols = []
+    today_raw = datetime.now()
+    today = datetime.now().strftime('%Y-%m-%d')
+    start_time = (today_raw - timedelta(days=25)).strftime('%Y-%m-%d')
+    end_time = today
+    timeframe = '1Day'
+    for sym in symbols: ### iterate through symbols and gather RSI
+        bars = exchange.get_historical_stock_bars(sym, timeframe, start_time, end_time)
+        gains = []
+        losses = []
+        for bar in range(0, 5): ### exclude today in iteration, and only get 14 day RSI
+            try:
+                current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
+                prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
+            except:
+                ## Catch failure if symbol doesn't return 14 or more bars. Also continue looping
+                print(f'\n{sym} has only {str(len(bars))} bars returned.')
+                continue
+            diff = float(current_cp - prev_cp)
+            if diff > 0:
+                gains.append(diff)
+                losses.append(0)
+            else:
+                losses.append(abs(diff)) ## losses expressed as positive values
+                gains.append(0)
+        try:
+            avg_gain = sum(gains) / 14
+        except ZeroDivisionError:
+            avg_gain = 1
+        try:
+            avg_loss = sum(losses) / 14
+        except ZeroDivisionError:
+            avg_loss = 1
+        try:
+            RS = avg_gain / avg_loss ## Relative Strength
+        except:
+            if avg_gain != 0 and avg_loss == 0:
+                RS = 100
+            elif avg_gain == 0 and avg_loss != 0:
+                RS = 0
+        RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
+        if RSI < 30 and RSI >= 2:
+            oversold_symbols.append(sym)
+        gains.clear() ## reset list for next symbol
+        losses.clear() ## reset list for next symbol
+        sleep(1) ## 1 second sleep for avoiding api rate limit
+    return oversold_symbols
+
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
  #### Limit number of stocks and specify stock price limit to trade
+ #### Get tickers and get mvwap
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
-        price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-        vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
-        if int(float(price)) <= price_limit and price < vwap: ## limit to stocks under a specified price point and with price below vwap
-            symbols.append(sym['symbol'])
-    return symbols
-    
+        try:
+            price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
+            if int(float(price)) <= price_limit: ## limit to stocks under a specified price point
+                symbols.append(sym['symbol'])
+        except Exception as e:
+            print(e)
+            print(f'Exception occurred in fetching this ticker: "{sym}"')
+    sleep(60) ## sleep for a minute before beginning MVWAP analysis
+    overbought_symbols = get_stock_rsi(symbols)
+    return overbought_symbols
+
 if __name__ == '__main__':
     print()
     print('$'*75)
@@ -162,7 +218,7 @@ if __name__ == '__main__':
     print('Author: eggadigga\n')
     print('$'*75)
 
-    order_time = time(hour=9, minute=40) ## time open/close position orders are allowed
+    order_time = time(hour=9, minute=35) ## time open/close position orders are allowed
     script_init_after_market_open = exchange.get_market_clock()['is_open'] ## see if app is run after market open
     market_closed_msg = '\nMarket is currently closed...\n'
 
@@ -187,7 +243,7 @@ if __name__ == '__main__':
                     continue
             print('\nMarket is now open... Let the games begin...')
             if script_init_after_market_open == False:
-                ### Wait 10 minutes after market open before position analyses
+                ### Wait 5 minutes after market open before position analyses
                 while datetime.now().time() < order_time:
                     sleep(1)
 
@@ -229,8 +285,8 @@ if __name__ == '__main__':
                     sleep(60)
                 close_all_positions()
 
-        #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
-            symbols = get_most_active_stocks(num_stocks=100, price_limit=80)
+        #### Open New Positions after 1:30PM ET. If symbols returned. Randomize symbols returned in list
+            symbols = get_most_active_stocks(num_stocks=100, price_limit=90)
             cash, positions = account_balance()
             if len(symbols) >= 1:
                 print('\nOpening new positions with available funds in just a minute. Purchase randomized for below symbols...\n\n')
@@ -240,8 +296,7 @@ if __name__ == '__main__':
                 if cash > '10': ## buy more if there's spare 10 dollars or more in spare cash
                     buy_stock_market_order(random.sample(symbols, len(symbols)))
             else:
-                print('\n No stocks returned with current price under VWAP.\nLet script continue until next day or re-run script at some point today.')
-
+                print('\n No stocks returned with RSI under 30 and current price below VWAP.\nLet script continue until next day or re-run script at some point today.')
 
         #### Cancel open orders
             sleep(61)
@@ -255,4 +310,5 @@ if __name__ == '__main__':
         print('\nError: Stock Trading app stopped running')
         print('Reason: ' + str(e))
         app_fail_smtp_alert(e)
+        raise(Exception)
         

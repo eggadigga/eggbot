@@ -155,7 +155,7 @@ def get_stock_rsi(symbols:list):
         bars = exchange.get_historical_stock_bars(sym, timeframe, start_time, end_time)
         gains = []
         losses = []
-        for bar in range(0, 14): ### exclude today in iteration, and only get 14 day RSI
+        for bar in range(0, 5): ### exclude today in iteration, and only get 5 day RSI
             try:
                 current_cp = bars['bars'][bar]['c'] ### close price for current day's in loop
                 prev_cp = bars['bars'][bar+1]['c'] ### close price for previous day's in loop
@@ -186,7 +186,7 @@ def get_stock_rsi(symbols:list):
             elif avg_gain == 0 and avg_loss != 0:
                 RS = 0
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
-        if RSI > 70 and RSI <= 98:
+        if RSI < 30 and RSI >= 2:
             overbought_symbols.append(sym)
         gains.clear() ## reset list for next symbol
         losses.clear() ## reset list for next symbol
@@ -196,14 +196,18 @@ def get_stock_rsi(symbols:list):
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
  #### Limit number of stocks and specify stock price limit to trade
- #### Get tickers with RSI below 30 and Price above VWAP
+ #### Get tickers and get mvwap
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
-        price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-        vwap = exchange.get_latest_stock_bar(sym['symbol'])['bar']['vw']
-        if int(float(price)) <= price_limit and price < vwap: ## limit to stocks under a specified price point and with price below vwap
-            symbols.append(sym['symbol'])
+        try:
+            price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
+            if int(float(price)) <= price_limit: ## limit to stocks under a specified price point
+                symbols.append(sym['symbol'])
+        except Exception as e:
+            print(e)
+            print(f'Exception occurred in fetching this ticker: "{sym}"')
+    sleep(60) ## sleep for a minute before beginning MVWAP analysis
     overbought_symbols = get_stock_rsi(symbols)
     return overbought_symbols
 

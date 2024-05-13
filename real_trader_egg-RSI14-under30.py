@@ -188,21 +188,28 @@ def get_stock_rsi(symbols:list):
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
         if RSI < 30 and RSI >= 2:
             oversold_symbols.append(sym)
+        gains.clear() ## reset list for next symbol
+        losses.clear() ## reset list for next symbol
         sleep(1) ## 1 second sleep for avoiding api rate limit
     return oversold_symbols
 
 def get_most_active_stocks(num_stocks, price_limit):
  #### Get Most Active Stocks ####
  #### Limit number of stocks and specify stock price limit to trade
- #### Get tickers with RSI below 30
+ #### Get tickers and get mvwap
     symbols = []
     most_active = exchange.get_most_active_stocks_by_volume(num_stocks)['most_actives'] ## specify top returned. 100 max
     for sym in most_active:
-        price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-        if int(float(price)) <= price_limit:
-            symbols.append(sym['symbol'])
-    oversold_symbols = get_stock_rsi(symbols)
-    return oversold_symbols
+        try:
+            price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
+            if int(float(price)) <= price_limit: ## limit to stocks under a specified price point
+                symbols.append(sym['symbol'])
+        except Exception as e:
+            print(e)
+            print(f'Exception occurred in fetching this ticker: "{sym}"')
+    sleep(60) ## sleep for a minute before beginning MVWAP analysis
+    overbought_symbols = get_stock_rsi(symbols)
+    return overbought_symbols
 
 if __name__ == '__main__':
     print()
@@ -278,7 +285,7 @@ if __name__ == '__main__':
                     sleep(60)
                 close_all_positions()
 
-        #### Open New Positions after 1:30PM ET. Randomize symbols returned in list
+        #### Open New Positions after 1:30PM ET. If symbols returned. Randomize symbols returned in list
             symbols = get_most_active_stocks(num_stocks=100, price_limit=90)
             cash, positions = account_balance()
             if len(symbols) >= 1:
@@ -289,7 +296,7 @@ if __name__ == '__main__':
                 if cash > '10': ## buy more if there's spare 10 dollars or more in spare cash
                     buy_stock_market_order(random.sample(symbols, len(symbols)))
             else:
-                print('\n No stocks returned with RSI under 30.\nLet script continue until next day or re-run script at some point today.')
+                print('\n No stocks returned with RSI under 30 and current price below VWAP.\nLet script continue until next day or re-run script at some point today.')
 
         #### Cancel open orders
             sleep(61)
