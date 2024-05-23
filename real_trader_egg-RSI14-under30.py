@@ -75,7 +75,7 @@ def analyze_positions():
     positions = exchange.get_open_positions()
     for position in positions:
         symbol = position['symbol']
-        pnl_pct = position['unrealized_intraday_plpc']
+        pnl_pct = position['unrealized_plpc']
         excluded_zeros = ('0.0000', '-0.0000')
         if pnl_pct.startswith(excluded_zeros) == False and position['asset_class'] == 'us_equity' and float(pnl_pct) < -0.02:
            exchange.close_single_position(symbol)
