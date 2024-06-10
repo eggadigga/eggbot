@@ -202,7 +202,7 @@ def get_most_active_stocks(num_stocks, price_limit):
     for sym in most_active:
         try:
             price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-            if int(float(price)) > price_limit: ## limit to stocks under a specified price point
+            if int(float(price)) < price_limit: ## limit to stocks under a specified price point
                 symbols.append(sym['symbol'])
         except Exception as e:
             print(e)
