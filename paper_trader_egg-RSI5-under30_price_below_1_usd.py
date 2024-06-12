@@ -286,7 +286,7 @@ if __name__ == '__main__':
                 close_all_positions()
 
         #### Open New Positions after 1:30PM ET. If symbols returned. Randomize symbols returned in list
-            symbols = get_most_active_stocks(num_stocks=100, price_limit=5)
+            symbols = get_most_active_stocks(num_stocks=100, price_limit=1)
             cash, positions = account_balance()
             if len(symbols) >= 1:
                 print('\nOpening new positions with available funds in just a minute. Purchase randomized for below symbols...\n\n')
