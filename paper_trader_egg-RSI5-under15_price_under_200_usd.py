@@ -186,7 +186,7 @@ def get_stock_rsi(symbols:list):
             elif avg_gain == 0 and avg_loss != 0:
                 RS = 0
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
-        if RSI < 30 and RSI >= 2:
+        if RSI < 15 and RSI >= 2:
             overbought_symbols.append(sym)
         gains.clear() ## reset list for next symbol
         losses.clear() ## reset list for next symbol
@@ -202,7 +202,7 @@ def get_most_active_stocks(num_stocks, price_limit):
     for sym in most_active:
         try:
             price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-            if int(float(price)) > price_limit: ## limit to stocks under a specified price point
+            if int(float(price)) < price_limit: ## limit to stocks under a specified price point
                 symbols.append(sym['symbol'])
         except Exception as e:
             print(e)
@@ -286,7 +286,7 @@ if __name__ == '__main__':
                 close_all_positions()
 
         #### Open New Positions after 1:30PM ET. If symbols returned. Randomize symbols returned in list
-            symbols = get_most_active_stocks(num_stocks=100, price_limit=95)
+            symbols = get_most_active_stocks(num_stocks=100, price_limit=200)
             cash, positions = account_balance()
             if len(symbols) >= 1:
                 print('\nOpening new positions with available funds in just a minute. Purchase randomized for below symbols...\n\n')
