@@ -202,7 +202,7 @@ def get_most_active_stocks(num_stocks, price_limit):
     for sym in most_active:
         try:
             price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-            if int(float(price)) < price_limit: ## limit to stocks under a specified price point
+            if int(float(price)) > price_limit: ## limit to stocks under a specified price point
                 symbols.append(sym['symbol'])
         except Exception as e:
             print(e)
@@ -286,7 +286,7 @@ if __name__ == '__main__':
                 close_all_positions()
 
         #### Open New Positions after 1:30PM ET. If symbols returned. Randomize symbols returned in list
-            symbols = get_most_active_stocks(num_stocks=100, price_limit=1)
+            symbols = get_most_active_stocks(num_stocks=100, price_limit=95)
             cash, positions = account_balance()
             if len(symbols) >= 1:
                 print('\nOpening new positions with available funds in just a minute. Purchase randomized for below symbols...\n\n')
