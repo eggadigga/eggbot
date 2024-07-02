@@ -186,7 +186,7 @@ def get_stock_rsi(symbols:list):
             elif avg_gain == 0 and avg_loss != 0:
                 RS = 0
         RSI = 100 - (100 / (1 + RS)) ## Relative Strength Index
-        if RSI < 30 and RSI >= 2:
+        if RSI < 30 and RSI >= 25:
             overbought_symbols.append(sym)
         gains.clear() ## reset list for next symbol
         losses.clear() ## reset list for next symbol
@@ -202,7 +202,7 @@ def get_most_active_stocks(num_stocks, price_limit):
     for sym in most_active:
         try:
             price = exchange.get_latest_stock_bar(sym['symbol'])['bar']['c']
-            if int(float(price)) > price_limit: ## limit to stocks under a specified price point
+            if int(float(price)) < price_limit: ## limit to stocks under a specified price point
                 symbols.append(sym['symbol'])
         except Exception as e:
             print(e)
