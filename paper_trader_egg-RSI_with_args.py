@@ -14,7 +14,23 @@ import os, sys, socket, requests, random
 from datetime import datetime, time, timedelta
 from time import sleep
 from modules.emailTool import sendMail
+from argparse import ArgumentParser
 
+## argument parser
+parser = ArgumentParser(
+    prog='Paper - EGGADIGGA Stock Bot with RSI',
+    description='Buy/Sell Stocks',
+    epilog='Try not to lose too much money.'
+    )
+
+parser.add_argument('price', type=int, help='Price of stock.')
+parser.add_argument('price_dir', choices=['<','>'], help='Specify greater than or less than direction of stock price.')
+parser.add_argument('rsi', type=int, help='Relative stock index (RSI).')
+parser.add_argument('rsi_dir', choices=['<', '>'], type=int, help='Specify greater than or less than direction of RSI measure to determine cost.')
+parser.add_argument('-rsi_limit', type=int, help='Specify RSI limit.')
+args = parser.parse_args()
+
+sleep(20)
 ## environment configuration
 main_dir = os.path.dirname(__file__)
 config_dir = main_dir + '/config'
